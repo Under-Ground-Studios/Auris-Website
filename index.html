@@ -303,13 +303,13 @@
             position: absolute;
             left: 0;
             right: 0;
-            bottom: 18%;
+            bottom: 16%;
             z-index: 2;
             text-align: center;
             padding: 0 24px;
             opacity: 0;
             animation: heroFade 1.2s ease forwards;
-            animation-delay: 2.6s;
+            animation-delay: 2.8s;
             pointer-events: none;
         }
         .hero-overlay .tagline {
@@ -1577,7 +1577,7 @@
                 });
             }
 
-            // ─── SNOW PARTICLES — soft falling dots, reveal "AURIS" ───
+            // ─── HERO: ANIMATED DITHERING + AMBIENT SNOW ───
             const canvas = document.getElementById('heroCanvas');
             const ctx = canvas.getContext('2d');
             let W, H,
@@ -1594,12 +1594,10 @@
                 ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
             }
 
-            // — text sampling for reveal —
+            // --- Text sampling for dithering mask ---
             const WORD = 'AURIS';
             let textPixels = null;
-            let targetPoints = [];
-            let revealMap = null;
-            let settled = [];
+            let textBounds = { xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity };
 
             function sampleText() {
                 const off = document.createElement('canvas');
@@ -1621,154 +1619,154 @@
 
                 const data = octx.getImageData(0, 0, W, H).data;
                 textPixels = new Uint8Array(W * H);
-                const step = 3;
-                const pts = [];
+                textBounds = { xMin: Infinity, xMax: -Infinity, yMin: Infinity, yMax: -Infinity };
+
+                const step = 2;
                 for (let y = 0; y < H; y += step) {
                     for (let x = 0; x < W; x += step) {
                         const idx = (y * W + x) * 4;
                         if (data[idx + 3] > 120) {
-                            pts.push({ x: x + (Math.random() - 0.5) * 1.5, y: y + (Math.random() - 0.5) * 1.5 });
                             textPixels[y * W + x] = 1;
+                            if (x < textBounds.xMin) textBounds.xMin = x;
+                            if (x > textBounds.xMax) textBounds.xMax = x;
+                            if (y < textBounds.yMin) textBounds.yMin = y;
+                            if (y > textBounds.yMax) textBounds.yMax = y;
                         }
                     }
                 }
-                // shuffle
-                for (let i = pts.length - 1; i > 0; i--) {
-                    const j = Math.floor(Math.random() * (i + 1));
-                    [pts[i], pts[j]] = [pts[j], pts[i]];
-                }
-                revealMap = new Uint8Array(W * H);
-                settled = [];
-                return pts;
+                // Add margin
+                const margin = 20;
+                textBounds.xMin = Math.max(0, textBounds.xMin - margin);
+                textBounds.xMax = Math.min(W, textBounds.xMax + margin);
+                textBounds.yMin = Math.max(0, textBounds.yMin - margin);
+                textBounds.yMax = Math.min(H, textBounds.yMax + margin);
             }
 
-            let aimed = [];
-            let ambient = [];
-            const AMBIENT_COUNT = 160;
-            const REVEAL_RATE = 2;
+            // --- Dithering noise (shader-style) ---
+            function ditherNoise(x, y, t) {
+                // Classic pseudo-random hash with time offset for animation
+                let n = Math.sin(x * 127.1 + y * 311.7 + t * 50.0) * 43758.5453;
+                return n - Math.floor(n); // returns 0..1
+            }
 
-            function spawnAmbient() {
+            let startTime = performance.now();
+            let revealProgress = 0;
+            const REVEAL_DURATION = 4500; // ms
+
+            // --- Ambient snow ---
+            let ambientSnow = [];
+            const SNOW_COUNT = 120;
+
+            function spawnSnow() {
                 return {
                     x: Math.random() * W,
                     y: -10 - Math.random() * H * 0.5,
-                    vy: 0.3 + Math.random() * 1.2,
-                    r: 0.8 + Math.random() * 2.2,
-                    op: 0.2 + Math.random() * 0.5,
-                    drift: (Math.random() - 0.5) * 0.4,
+                    vy: 0.4 + Math.random() * 1.6,
+                    r: 0.6 + Math.random() * 2.0,
+                    op: 0.15 + Math.random() * 0.45,
+                    drift: (Math.random() - 0.5) * 0.5,
                 };
             }
 
-            function initParticles() {
-                targetPoints = sampleText();
-                aimed = [];
-                ambient = [];
-                for (let i = 0; i < AMBIENT_COUNT; i++) ambient.push(spawnAmbient());
+            function initSnow() {
+                ambientSnow = [];
+                for (let i = 0; i < SNOW_COUNT; i++) ambientSnow.push(spawnSnow());
             }
 
-            function releaseAimed() {
-                for (let i = 0; i < REVEAL_RATE && targetPoints.length > 0; i++) {
-                    const t = targetPoints.pop();
-                    aimed.push({
-                        x: t.x,
-                        targetY: t.y,
-                        y: -20 - Math.random() * 120,
-                        vy: 1.2 + Math.random() * 1.6,
-                        r: 1.5 + Math.random() * 1.2,
-                        done: false,
-                    });
+            // --- Main draw loop ---
+            function drawFrame() {
+                const now = performance.now();
+                const elapsed = now - startTime;
+
+                // Update reveal progress (ease-in-out)
+                if (elapsed < REVEAL_DURATION) {
+                    const p = elapsed / REVEAL_DURATION;
+                    // Smoothstep ease in-out
+                    revealProgress = p * p * (3 - 2 * p);
+                } else {
+                    revealProgress = 1;
                 }
-            }
 
-            function drawParticles() {
+                // 1. Clear
                 ctx.clearRect(0, 0, W, H);
-                const now = Date.now();
 
-                // 1. Ambient snow (falling everywhere)
-                for (const p of ambient) {
-                    p.y += p.vy;
-                    p.x += p.drift + Math.sin(now * 0.0008 + p.x) * 0.04;
-                    if (p.y > H + 20) {
-                        Object.assign(p, spawnAmbient());
-                        p.y = -10 - Math.random() * 30;
+                // 2. Draw ambient snow (falling behind the text)
+                for (const s of ambientSnow) {
+                    s.y += s.vy;
+                    s.x += s.drift + Math.sin(now * 0.0006 + s.x) * 0.03;
+                    if (s.y > H + 20) {
+                        Object.assign(s, spawnSnow());
+                        s.y = -10 - Math.random() * 30;
                     }
-                    if (p.x < -10) p.x = W + 10;
-                    if (p.x > W + 10) p.x = -10;
-
-                    ctx.globalAlpha = p.op;
+                    if (s.x < -10) s.x = W + 10;
+                    if (s.x > W + 10) s.x = -10;
+                    ctx.globalAlpha = s.op;
                     ctx.fillStyle = '#fff';
                     ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+                    ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
                     ctx.fill();
                 }
                 ctx.globalAlpha = 1;
 
-                // 2. Aimed snow (falling toward text)
-                releaseAimed();
-                for (let i = aimed.length - 1; i >= 0; i--) {
-                    const p = aimed[i];
-                    p.y += p.vy;
-                    p.x += (Math.random() - 0.5) * 0.2;
+                // 3. Animated dithering text reveal
+                if (textPixels) {
+                    const xMin = textBounds.xMin;
+                    const xMax = textBounds.xMax;
+                    const yMin = textBounds.yMin;
+                    const yMax = textBounds.yMax;
 
-                    if (p.y >= p.targetY) {
-                        const px = Math.round(p.x);
-                        const py = Math.round(p.y);
-                        if (px >= 0 && px < W && py >= 0 && py < H) {
-                            const idx = py * W + px;
-                            if (textPixels[idx] === 1) {
-                                revealMap[idx] = 1;
-                                settled.push({ x: px, y: py });
-                            }
-                        }
-                        aimed.splice(i, 1);
-                        continue;
-                    }
-                    ctx.globalAlpha = 0.6 + Math.random() * 0.3;
-                    ctx.fillStyle = '#fff';
-                    ctx.beginPath();
-                    ctx.arc(p.x, p.y, p.r * 0.8, 0, Math.PI * 2);
-                    ctx.fill();
-                }
-                ctx.globalAlpha = 1;
-
-                // 3. Draw revealed text (soft white pixels)
-                if (settled.length > 0) {
+                    // Use ImageData for performance
                     const imgData = ctx.createImageData(W, H);
                     const data = imgData.data;
-                    const r = revealMap;
-                    for (let i = 0; i < r.length; i++) {
-                        if (r[i] === 1) {
-                            const idx = i * 4;
-                            data[idx] = 255;
-                            data[idx + 1] = 255;
-                            data[idx + 2] = 255;
-                            data[idx + 3] = 255;
+
+                    for (let y = yMin; y <= yMax; y++) {
+                        for (let x = xMin; x <= xMax; x++) {
+                            const idx = y * W + x;
+                            if (textPixels[idx] === 1) {
+                                // Dithering threshold: noise < progress
+                                const noise = ditherNoise(x, y, now / 1000);
+                                if (noise < revealProgress) {
+                                    const pIdx = idx * 4;
+                                    data[pIdx] = 255;
+                                    data[pIdx + 1] = 255;
+                                    data[pIdx + 2] = 255;
+                                    data[pIdx + 3] = 255;
+                                }
+                            }
                         }
                     }
                     ctx.putImageData(imgData, 0, 0);
 
-                    // subtle glow around the revealed text
-                    const grad = ctx.createRadialGradient(W / 2, H * 0.44, 0, W / 2, H * 0.44, Math.max(W, H) * 0.28);
-                    grad.addColorStop(0, 'rgba(255,255,255,0.025)');
-                    grad.addColorStop(1, 'rgba(255,255,255,0)');
-                    ctx.fillStyle = grad;
-                    ctx.fillRect(0, 0, W, H);
+                    // Soft glow when nearly complete
+                    if (revealProgress > 0.7) {
+                        const grad = ctx.createRadialGradient(W / 2, H * 0.44, 0, W / 2, H * 0.44, Math.max(W, H) * 0.28);
+                        grad.addColorStop(0, 'rgba(255,255,255,0.025)');
+                        grad.addColorStop(1, 'rgba(255,255,255,0)');
+                        ctx.fillStyle = grad;
+                        ctx.fillRect(0, 0, W, H);
+                    }
                 }
 
-                requestAnimationFrame(drawParticles);
+                requestAnimationFrame(drawFrame);
             }
 
+            // --- resize handler ---
             let resizeTimer;
             window.addEventListener('resize', () => {
                 clearTimeout(resizeTimer);
                 resizeTimer = setTimeout(() => {
                     resizeCanvas();
-                    initParticles();
+                    sampleText();
+                    initSnow();
                 }, 200);
             });
 
+            // --- init ---
             resizeCanvas();
-            initParticles();
-            drawParticles();
+            sampleText();
+            initSnow();
+            startTime = performance.now();
+            drawFrame();
 
             // ─── KEY SYSTEM (localStorage) ───
             const STORAGE_KEY = 'auris_keys_data';
