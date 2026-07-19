@@ -1,165 +1,2332 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Auris — Script editor &amp; execution client for Roblox</title>
-<meta name="description" content="Auris is a Monaco-powered script editor and execution client for Roblox: a script hub, a lightweight key system, and an editor built for people who actually write scripts.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="css/style.css">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Auris — Roblox Lua Script Utility</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=JetBrains+Mono:ital,wght@0,100..800;1,100..800&display=swap" rel="stylesheet" />
+    <style>
+        /* ============================================================
+                   AURIS — refined minimal theme
+                   monochrome palette · no emojis · clean typography
+                   ============================================================ */
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        :root {
+            --bg: #050505;
+            --bg-raised: #0b0b0b;
+            --bg-panel: rgba(255, 255, 255, 0.035);
+            --border: rgba(255, 255, 255, 0.07);
+            --border-hi: rgba(255, 255, 255, 0.16);
+            --text: #efefef;
+            --text-dim: #888;
+            --text-muted: #555;
+            --text-inverse: #0b0b0b;
+            --accent: #c0c0c0;
+            --accent-soft: rgba(192, 192, 192, 0.12);
+            --accent-glow: rgba(255, 255, 255, 0.06);
+            --radius-sm: 6px;
+            --radius-md: 12px;
+            --radius-lg: 20px;
+            --radius-xl: 28px;
+            --font: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --mono: 'JetBrains Mono', ui-monospace, 'Consolas', monospace;
+            --max-w: 1120px;
+            --nav-h: 62px;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+            font-size: 15px;
+            line-height: 1.65;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        ::selection {
+            background: rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        ::-webkit-scrollbar {
+            width: 4px;
+        }
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #333;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        a {
+            color: inherit;
+            text-decoration: none;
+        }
+
+        button {
+            font: inherit;
+            cursor: pointer;
+            border: none;
+            background: none;
+            color: inherit;
+        }
+
+        input {
+            font: inherit;
+            color: inherit;
+            background: none;
+            border: none;
+            outline: none;
+        }
+
+        /* ---- containers ---- */
+        .container {
+            max-width: var(--max-w);
+            margin: 0 auto;
+            padding: 0 22px;
+        }
+
+        /* ---- nav ---- */
+        .navbar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            height: var(--nav-h);
+            padding: 0 22px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: rgba(5, 5, 5, 0.7);
+            backdrop-filter: blur(14px) saturate(1.4);
+            -webkit-backdrop-filter: blur(14px) saturate(1.4);
+            border-bottom: 1px solid transparent;
+            transition: border-color 0.3s, background 0.3s;
+        }
+        .navbar.scrolled {
+            border-color: var(--border);
+            background: rgba(5, 5, 5, 0.85);
+        }
+
+        .nav-logo {
+            font-weight: 700;
+            font-size: 18px;
+            letter-spacing: 0.06em;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-logo .dot {
+            color: var(--text-dim);
+        }
+
+        .nav-links {
+            display: flex;
+            gap: 28px;
+            list-style: none;
+            align-items: center;
+        }
+        .nav-links a {
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            transition: color 0.2s;
+            letter-spacing: 0.02em;
+            position: relative;
+            padding: 4px 0;
+        }
+        .nav-links a::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -2px;
+            width: 0;
+            height: 1.5px;
+            background: var(--text);
+            transition: width 0.3s;
+        }
+        .nav-links a:hover,
+        .nav-links a.active {
+            color: var(--text);
+        }
+        .nav-links a:hover::after,
+        .nav-links a.active::after {
+            width: 100%;
+        }
+
+        .nav-discord {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            font-weight: 500;
+            color: var(--text-dim);
+            padding: 6px 16px;
+            border: 1px solid var(--border);
+            border-radius: 30px;
+            transition: border-color 0.25s, color 0.25s;
+        }
+        .nav-discord:hover {
+            border-color: var(--border-hi);
+            color: var(--text);
+        }
+        .nav-discord .icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        .nav-toggle {
+            display: none;
+            width: 36px;
+            height: 36px;
+            align-items: center;
+            justify-content: center;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text-dim);
+        }
+        .nav-toggle .icon {
+            width: 18px;
+            height: 18px;
+        }
+
+        /* mobile panel */
+        .mobile-panel {
+            display: none;
+            position: fixed;
+            top: 0;
+            right: 0;
+            bottom: 0;
+            width: min(300px, 80vw);
+            background: #080808;
+            border-left: 1px solid var(--border);
+            z-index: 140;
+            padding: 24px 20px;
+            transform: translateX(100%);
+            transition: transform 0.32s ease;
+        }
+        .mobile-panel.open {
+            transform: translateX(0);
+        }
+        .mobile-panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+        }
+        .mobile-panel-head .close-btn {
+            color: var(--text-dim);
+            padding: 4px;
+        }
+        .mobile-panel-head .close-btn .icon {
+            width: 20px;
+            height: 20px;
+        }
+        .mobile-panel nav {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .mobile-panel nav a {
+            padding: 12px 4px;
+            font-size: 15px;
+            color: var(--text);
+            border-bottom: 1px solid var(--border);
+        }
+        .scrim {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 130;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        .scrim.open {
+            opacity: 1;
+        }
+
+        @media (max-width: 780px) {
+            .nav-links {
+                display: none;
+            }
+            .nav-toggle {
+                display: inline-flex;
+            }
+            .mobile-panel,
+            .scrim {
+                display: block;
+            }
+            .nav-discord .label {
+                display: none;
+            }
+        }
+
+        /* ---- hero / canvas ---- */
+        .hero {
+            position: relative;
+            height: 100vh;
+            min-height: 560px;
+            height: 100svh;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .hero-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            display: block;
+        }
+        .hero-overlay {
+            position: relative;
+            z-index: 2;
+            text-align: center;
+            padding: 0 24px;
+            opacity: 0;
+            animation: heroFade 1.2s ease forwards;
+            animation-delay: 2.6s;
+            pointer-events: none;
+        }
+        .hero-overlay .tagline {
+            font-size: 14px;
+            font-weight: 400;
+            color: var(--text-dim);
+            letter-spacing: 0.2em;
+            text-transform: uppercase;
+            margin-top: 10px;
+        }
+        .hero-overlay .sub {
+            font-size: 15px;
+            color: var(--text-muted);
+            margin-top: 4px;
+            font-weight: 300;
+        }
+        .hero-actions {
+            margin-top: 28px;
+            display: flex;
+            gap: 14px;
+            justify-content: center;
+            flex-wrap: wrap;
+            pointer-events: auto;
+        }
+
+        @keyframes heroFade {
+            to {
+                opacity: 1;
+            }
+        }
+
+        /* ---- buttons ---- */
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            padding: 11px 26px;
+            border-radius: 30px;
+            font-weight: 600;
+            font-size: 13.5px;
+            letter-spacing: 0.02em;
+            border: 1px solid transparent;
+            transition: background 0.25s, border-color 0.25s, transform 0.2s, box-shadow 0.25s;
+        }
+        .btn-primary {
+            background: var(--text);
+            color: var(--bg);
+            border-color: var(--text);
+        }
+        .btn-primary:hover {
+            background: #ccc;
+            border-color: #ccc;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255, 255, 255, 0.06);
+        }
+        .btn-secondary {
+            background: transparent;
+            border-color: var(--border);
+            color: var(--text);
+        }
+        .btn-secondary:hover {
+            border-color: var(--border-hi);
+            background: var(--bg-panel);
+            transform: translateY(-2px);
+        }
+        .btn-ghost {
+            background: var(--bg-panel);
+            border-color: var(--border);
+            color: var(--text-dim);
+        }
+        .btn-ghost:hover {
+            border-color: var(--border-hi);
+            color: var(--text);
+        }
+        .btn-danger {
+            background: rgba(255, 80, 80, 0.08);
+            border-color: rgba(255, 80, 80, 0.2);
+            color: #f77;
+        }
+        .btn-danger:hover {
+            background: rgba(255, 80, 80, 0.16);
+            border-color: rgba(255, 80, 80, 0.35);
+        }
+        .btn-block {
+            width: 100%;
+            justify-content: center;
+        }
+        .btn-sm {
+            padding: 7px 16px;
+            font-size: 12px;
+            border-radius: 20px;
+        }
+        .btn .icon {
+            width: 16px;
+            height: 16px;
+            flex-shrink: 0;
+        }
+
+        /* ---- sections ---- */
+        section {
+            padding: 80px 0;
+            border-bottom: 1px solid var(--border);
+        }
+        section:last-of-type {
+            border-bottom: none;
+        }
+
+        .section-head {
+            max-width: 600px;
+            margin-bottom: 44px;
+        }
+        .section-head .label {
+            font-size: 11px;
+            font-weight: 500;
+            letter-spacing: 0.15em;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 8px;
+        }
+        .section-head h2 {
+            font-size: clamp(26px, 3.4vw, 38px);
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            line-height: 1.2;
+        }
+        .section-head p {
+            color: var(--text-dim);
+            margin-top: 8px;
+            font-size: 15.5px;
+        }
+
+        /* ---- cards ---- */
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 28px 30px;
+            transition: border-color 0.25s, transform 0.25s;
+            backdrop-filter: blur(4px);
+        }
+        .card-hover:hover {
+            border-color: var(--border-hi);
+            transform: translateY(-3px);
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 22px;
+        }
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 22px;
+        }
+        @media (max-width: 820px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+            .grid-3 {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        @media (max-width: 540px) {
+            .grid-3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .feature-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: var(--radius-sm);
+            background: var(--accent-soft);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 16px;
+        }
+        .feature-icon .icon {
+            width: 20px;
+            height: 20px;
+            color: var(--text-dim);
+        }
+        .feature-card h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin: 0;
+        }
+
+        /* ---- steps ---- */
+        .steps {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+            counter-reset: step;
+        }
+        @media (max-width: 700px) {
+            .steps {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+        }
+        .step .num {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            letter-spacing: 0.08em;
+            display: block;
+            margin-bottom: 10px;
+        }
+        .step h3 {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 2px;
+        }
+        .step p {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin: 0;
+        }
+
+        /* ---- key system ---- */
+        .key-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+        @media (max-width: 800px) {
+            .key-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .key-panel .panel-title {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        .key-panel .panel-title h3 {
+            font-size: 15px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .key-panel .panel-title h3 .icon {
+            width: 18px;
+            height: 18px;
+            color: var(--text-dim);
+        }
+
+        .field {
+            margin-bottom: 16px;
+        }
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-bottom: 6px;
+            letter-spacing: 0.03em;
+            text-transform: uppercase;
+        }
+        .field input {
+            width: 100%;
+            padding: 10px 14px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+            transition: border-color 0.25s;
+        }
+        .field input:focus {
+            border-color: var(--border-hi);
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 11.5px;
+            font-weight: 600;
+            font-family: var(--mono);
+            padding: 3px 12px 3px 8px;
+            border-radius: 20px;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+        }
+        .status-badge::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        .status-badge.active {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text);
+        }
+        .status-badge.active::before {
+            background: var(--text);
+        }
+        .status-badge.inactive {
+            background: rgba(255, 255, 255, 0.03);
+            color: var(--text-muted);
+        }
+        .status-badge.inactive::before {
+            background: var(--text-muted);
+        }
+        .status-badge.expired {
+            background: rgba(255, 80, 80, 0.08);
+            color: #f77;
+        }
+        .status-badge.expired::before {
+            background: #f77;
+        }
+
+        .key-display {
+            font-family: var(--mono);
+            font-size: 14px;
+            letter-spacing: 0.02em;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            margin: 12px 0;
+            word-break: break-all;
+        }
+        .key-display button {
+            color: var(--text-muted);
+            flex-shrink: 0;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+        .key-display button:hover {
+            color: var(--text);
+        }
+        .key-display .icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        .meta-line {
+            display: flex;
+            justify-content: space-between;
+            padding: 8px 0;
+            border-bottom: 1px solid var(--border);
+            font-size: 13.5px;
+        }
+        .meta-line:last-child {
+            border-bottom: none;
+        }
+        .meta-line .label {
+            color: var(--text-dim);
+        }
+        .meta-line .value {
+            font-weight: 500;
+        }
+        .meta-line .mono {
+            font-family: var(--mono);
+            font-size: 13px;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+        }
+
+        .status-msg {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 13px;
+            display: none;
+        }
+        .status-msg.success {
+            display: block;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            color: var(--text);
+        }
+        .status-msg.error {
+            display: block;
+            background: rgba(255, 80, 80, 0.06);
+            border: 1px solid rgba(255, 80, 80, 0.12);
+            color: #f77;
+        }
+        .status-msg.info {
+            display: block;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            color: var(--text-dim);
+        }
+
+        .key-list {
+            margin-top: 14px;
+            max-height: 220px;
+            overflow-y: auto;
+        }
+        .key-list .key-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 4px;
+            border-bottom: 1px solid var(--border);
+            font-size: 13px;
+            font-family: var(--mono);
+            color: var(--text-dim);
+        }
+        .key-list .key-item .code {
+            color: var(--text);
+        }
+        .key-list .key-item .actions {
+            display: flex;
+            gap: 6px;
+        }
+        .key-list .key-item .actions button {
+            color: var(--text-muted);
+            padding: 2px 6px;
+            font-size: 12px;
+            transition: color 0.2s;
+        }
+        .key-list .key-item .actions button:hover {
+            color: #f77;
+        }
+        .key-list .empty {
+            color: var(--text-muted);
+            text-align: center;
+            padding: 20px 0;
+            font-size: 13px;
+        }
+
+        .admin-toggle {
+            margin-top: 16px;
+            font-size: 12.5px;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: color 0.2s;
+            padding: 4px 0;
+        }
+        .admin-toggle:hover {
+            color: var(--text-dim);
+        }
+        .admin-toggle .icon {
+            width: 14px;
+            height: 14px;
+            transition: transform 0.3s;
+        }
+        .admin-toggle .icon.open {
+            transform: rotate(180deg);
+        }
+        .admin-area {
+            display: none;
+            margin-top: 16px;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+        .admin-area.open {
+            display: block;
+        }
+
+        /* ---- user panel ---- */
+        .dash-grid {
+            display: grid;
+            grid-template-columns: 1.3fr 1fr;
+            gap: 22px;
+            margin-top: 8px;
+        }
+        @media (max-width: 760px) {
+            .dash-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .dash-stats {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 28px;
+        }
+        @media (max-width: 700px) {
+            .dash-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+        .stat-card .stat-label {
+            font-family: var(--mono);
+            font-size: 10.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            display: block;
+            margin-bottom: 4px;
+        }
+        .stat-card .stat-value {
+            font-size: 26px;
+            font-weight: 700;
+        }
+
+        /* ---- auth ---- */
+        .auth-shell {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 100px 20px 60px;
+        }
+        .auth-card {
+            max-width: 380px;
+            width: 100%;
+            padding: 32px 30px;
+        }
+        .auth-card h1 {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+        .auth-card .sub {
+            font-size: 14px;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+        }
+        .auth-tabs {
+            display: flex;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 3px;
+            margin-bottom: 22px;
+        }
+        .auth-tabs button {
+            flex: 1;
+            padding: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            transition: background 0.2s, color 0.2s;
+        }
+        .auth-tabs button.active {
+            background: var(--text);
+            color: var(--bg);
+        }
+        .auth-tabs button:not(.active):hover {
+            color: var(--text);
+        }
+        .auth-hint {
+            font-family: var(--mono);
+            font-size: 12px;
+            color: var(--text-muted);
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px dashed var(--border);
+            border-radius: var(--radius-sm);
+            padding: 12px 14px;
+            margin-top: 20px;
+            line-height: 1.7;
+        }
+
+        /* ---- discord section ---- */
+        .discord-band {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+            flex-wrap: wrap;
+            padding: 36px 40px;
+        }
+        .discord-band .left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        .discord-band .left .icon {
+            width: 36px;
+            height: 36px;
+            color: var(--text-dim);
+        }
+        .discord-band h2 {
+            font-size: clamp(20px, 2.4vw, 28px);
+            font-weight: 700;
+            margin-bottom: 2px;
+        }
+        .discord-band p {
+            color: var(--text-dim);
+            margin: 0;
+            font-size: 14px;
+        }
+
+        /* ---- footer ---- */
+        .footer {
+            padding: 50px 0 28px;
+            border-top: 1px solid var(--border);
+        }
+        .footer-grid {
+            display: grid;
+            grid-template-columns: 1.6fr 1fr 1fr 1fr;
+            gap: 30px;
+            padding-bottom: 32px;
+        }
+        @media (max-width: 760px) {
+            .footer-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+        }
+        .footer-brand p {
+            font-size: 13px;
+            color: var(--text-dim);
+            max-width: 260px;
+            margin-top: 8px;
+        }
+        .footer-col h4 {
+            font-family: var(--mono);
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+        .footer-col a {
+            display: block;
+            font-size: 13.5px;
+            color: var(--text-dim);
+            padding: 4px 0;
+            transition: color 0.2s;
+        }
+        .footer-col a:hover {
+            color: var(--text);
+        }
+        .footer-bottom {
+            display: flex;
+            justify-content: space-between;
+            gap: 20px;
+            flex-wrap: wrap;
+            padding-top: 20px;
+            border-top: 1px solid var(--border);
+            font-size: 12.5px;
+            color: var(--text-muted);
+        }
+        .footer-bottom .disclaimer {
+            max-width: 520px;
+        }
+
+        /* ---- toast ---- */
+        .toast-stack {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            z-index: 300;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .toast {
+            background: #0f0f0f;
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--text);
+            border-radius: var(--radius-sm);
+            padding: 12px 18px;
+            font-size: 13px;
+            min-width: 200px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            animation: toastIn 0.25s ease;
+            color: var(--text);
+        }
+        .toast.error {
+            border-left-color: #f77;
+        }
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* ---- modal ---- */
+        .modal-scrim {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(4px);
+            z-index: 400;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .modal-box {
+            max-width: 360px;
+            width: 100%;
+            padding: 28px 24px;
+            text-align: center;
+        }
+        .modal-box p {
+            color: var(--text);
+            font-size: 15px;
+            margin-bottom: 22px;
+        }
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+        }
+        .modal-actions .btn {
+            flex: 1;
+            justify-content: center;
+        }
+
+        /* ---- utilities ---- */
+        .hidden {
+            display: none !important;
+        }
+        .text-center {
+            text-align: center;
+        }
+        .mt-8 {
+            margin-top: 8px;
+        }
+        .mt-16 {
+            margin-top: 16px;
+        }
+        .mb-16 {
+            margin-bottom: 16px;
+        }
+        .gap-8 {
+            gap: 8px;
+        }
+        .flex-center {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mono {
+            font-family: var(--mono);
+        }
+
+        /* ---- download page extras ---- */
+        .changelog details {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 0 20px;
+            margin-bottom: 10px;
+            transition: border-color 0.2s;
+        }
+        .changelog details[open] {
+            border-color: var(--border-hi);
+        }
+        .changelog summary {
+            list-style: none;
+            cursor: pointer;
+            padding: 16px 0;
+            font-weight: 600;
+            font-size: 14.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .changelog summary::-webkit-details-marker {
+            display: none;
+        }
+        .changelog summary .chev {
+            width: 14px;
+            height: 14px;
+            color: var(--text-muted);
+            transition: transform 0.3s;
+            flex-shrink: 0;
+            margin-left: 16px;
+        }
+        .changelog details[open] summary .chev {
+            transform: rotate(180deg);
+            color: var(--text);
+        }
+        .changelog .body {
+            padding: 0 0 18px;
+            font-size: 14px;
+            color: var(--text-dim);
+        }
+        .changelog .body p:last-child {
+            margin-bottom: 0;
+        }
+
+        /* ---- responsive tweaks ---- */
+        @media (max-width: 480px) {
+            .card {
+                padding: 20px 18px;
+            }
+            .discord-band {
+                padding: 24px 20px;
+            }
+            .discord-band .left {
+                flex-wrap: wrap;
+            }
+            .hero-overlay .tagline {
+                font-size: 12px;
+            }
+            .hero-overlay .sub {
+                font-size: 13px;
+            }
+        }
+    </style>
 </head>
 <body>
 
-<nav class="navbar" id="navbar">
-  <div class="container nav-container">
-    <a href="index.html" class="nav-logo">AURIS<span class="dot">.</span></a>
-    <ul class="nav-links">
-      <li><a href="index.html">Home</a></li>
-      <li><a href="information.html">Information</a></li>
-      <li><a href="keysystem.html">Key System</a></li>
-      <li><a href="download.html">Download</a></li>
-      <li><a href="user.html">Panel</a></li>
-    </ul>
-    <div class="nav-actions">
-      <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">
-        <span data-icon="chat"></span><span class="btn-discord-label">Discord</span>
-      </a>
-      <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span data-icon="menu"></span></button>
-    </div>
-  </div>
-</nav>
-<div class="scrim" id="scrim"></div>
-<aside class="mobile-panel" id="mobilePanel">
-  <div class="mobile-panel-head">
-    <span class="nav-logo">AURIS<span class="dot">.</span></span>
-    <button id="mobileClose" aria-label="Close menu" style="background:none;border:none;color:var(--paper)"><span data-icon="close"></span></button>
-  </div>
-  <nav>
-    <a href="index.html">Home</a>
-    <a href="information.html">Information</a>
-    <a href="keysystem.html">Key System</a>
-    <a href="download.html">Download</a>
-    <a href="user.html">Panel</a>
-  </nav>
-</aside>
-
-<section class="hero">
-  <canvas id="heroCanvas" class="hero-canvas"></canvas>
-  <div class="hero-overlay">
-    <p>A Monaco-powered script editor and execution client for Roblox — built for people who actually write scripts.</p>
-    <div class="hero-actions">
-      <a href="download.html" class="btn btn-primary"><span data-icon="download"></span>Download Auris</a>
-      <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="btn btn-ghost"><span data-icon="chat"></span>Join Discord</a>
-    </div>
-  </div>
-  <button class="scroll-cue" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})" aria-label="Scroll to features">
-    <span data-icon="chevrondown"></span>
-  </button>
-</section>
-
-<section id="features">
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">What's inside</span>
-      <h2>Everything sits in one editor</h2>
-      <p>No separate launchers, no bloat. Auris is one window: an editor, a script hub, and a key you only have to think about once a day.</p>
-    </div>
-    <div class="grid grid-3">
-      <div class="card card-hover feature-card">
-        <div class="icon-badge"><span data-icon="code"></span></div>
-        <h3>Monaco-based editor</h3>
-        <p>The same editing engine behind VS Code — real syntax highlighting, multi-tab support, and a search-as-you-type tab switcher.</p>
-      </div>
-      <div class="card card-hover feature-card">
-        <div class="icon-badge"><span data-icon="zap"></span></div>
-        <h3>Script hub, built in</h3>
-        <p>Pull scripts from the hub and run them without leaving the editor. Favorite the ones you use every session.</p>
-      </div>
-      <div class="card card-hover feature-card">
-        <div class="icon-badge"><span data-icon="palette"></span></div>
-        <h3>Themes that don't fight you</h3>
-        <p>A dark interface by default, with the kind of contrast and spacing that stays comfortable after the tenth tab.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="section-head">
-      <span class="eyebrow">Getting started</span>
-      <h2>Three steps, in order</h2>
-      <p>This is the actual order things happen in — key first, then the download, then you're in the editor.</p>
-    </div>
-    <div class="steps">
-      <div class="step">
-        <span class="step-num">01 / KEY</span>
-        <h3>Get a key</h3>
-        <p>Head to the Key System page and generate one. It's free and valid for 24 hours.</p>
-      </div>
-      <div class="step">
-        <span class="step-num">02 / INSTALL</span>
-        <h3>Download Auris</h3>
-        <p>Grab the current build for Windows from the download page and run the installer.</p>
-      </div>
-      <div class="step">
-        <span class="step-num">03 / RUN</span>
-        <h3>Paste your key and go</h3>
-        <p>Drop your key into the prompt on first launch, open a tab, and start writing.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<section>
-  <div class="container">
-    <div class="card discord-band">
-      <div class="discord-band-left">
-        <div class="icon-badge alt"><span data-icon="chat"></span></div>
-        <div>
-          <h2>Join the Discord</h2>
-          <p>Bug reports, script requests, and update announcements happen there first — not on the website.</p>
+    <!-- ═══ NAV ═══ -->
+    <nav class="navbar" id="navbar">
+        <a href="#home" class="nav-logo">AURIS<span class="dot">.</span></a>
+        <ul class="nav-links">
+            <li><a href="#home" class="active">Home</a></li>
+            <li><a href="#info">Info</a></li>
+            <li><a href="#keysystem">Keys</a></li>
+            <li><a href="#download">Download</a></li>
+            <li><a href="#userpanel">Panel</a></li>
+        </ul>
+        <div style="display:flex;align-items:center;gap:12px;">
+            <a href="https://discord.gg/mG2QCJRTJK" target="_blank" rel="noopener" class="nav-discord">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M8.5 3.5C6.8 4.2 4.8 6 4 7.5c-1.2 2.2-1.5 5-1.5 6.5 0 2.5 1.2 5 3 6.5 1.8 1.5 4.2 2.5 6.5 2.5s4.7-1 6.5-2.5c1.8-1.5 3-4 3-6.5 0-1.5-.3-4.3-1.5-6.5-.8-1.5-2.8-3.3-4.5-4"/><path d="M8.5 6.5c-1.2.8-2.5 2-3 3.5"/><path d="M15.5 6.5c1.2.8 2.5 2 3 3.5"/><circle cx="12" cy="12" r="2"/><path d="M8.5 13.5c.5 1 1.8 1.5 3.5 1.5s3-.5 3.5-1.5"/></svg>
+                <span class="label">Discord</span>
+            </a>
+            <button class="nav-toggle" id="navToggle" aria-label="Menu">
+                <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            </button>
         </div>
-      </div>
-      <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="btn btn-primary"><span data-icon="send"></span>Join the server</a>
-    </div>
-  </div>
-</section>
+    </nav>
 
-<footer class="footer">
-  <div class="container">
-    <div class="footer-top">
-      <div class="footer-brand">
-        <span class="nav-logo">AURIS<span class="dot">.</span></span>
-        <p>A Monaco-powered script editor and execution client for Roblox.</p>
-      </div>
-      <div class="footer-col">
-        <h4>Navigate</h4>
-        <a href="index.html">Home</a>
-        <a href="information.html">Information</a>
-        <a href="keysystem.html">Key System</a>
-        <a href="download.html">Download</a>
-      </div>
-      <div class="footer-col">
-        <h4>Account</h4>
-        <a href="user.html">User panel</a>
-        <a href="admin.html">Admin</a>
-      </div>
-      <div class="footer-col">
-        <h4>Community</h4>
-        <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer">Discord</a>
-      </div>
-    </div>
-    <div class="footer-bottom">
-      <p>&copy; <span data-year></span> Auris.</p>
-      <p class="disclaimer">Auris is provided for educational and private-server use. You're responsible for complying with the terms of service of any game you run it alongside.</p>
-    </div>
-  </div>
-</footer>
+    <div class="scrim" id="scrim"></div>
+    <aside class="mobile-panel" id="mobilePanel">
+        <div class="mobile-panel-head">
+            <span class="nav-logo">AURIS<span class="dot">.</span></span>
+            <button class="close-btn" id="mobileClose"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="6" y1="6" x2="18" y2="18"/><line x1="18" y1="6" x2="6" y2="18"/></svg></button>
+        </div>
+        <nav>
+            <a href="#home">Home</a>
+            <a href="#info">Info</a>
+            <a href="#keysystem">Keys</a>
+            <a href="#download">Download</a>
+            <a href="#userpanel">Panel</a>
+            <a href="https://discord.gg/mG2QCJRTJK" target="_blank" rel="noopener" style="color:var(--text-dim);">Discord</a>
+        </nav>
+    </aside>
 
-<script src="js/app.js"></script>
-<script src="js/particles.js"></script>
+    <!-- ═══ HERO ═══ -->
+    <section class="hero" id="home">
+        <canvas class="hero-canvas" id="heroCanvas"></canvas>
+        <div class="hero-overlay">
+            <div class="tagline">Roblox Lua Script Utility</div>
+            <div class="sub">Monaco-powered · Fast · Reliable</div>
+            <div class="hero-actions">
+                <a href="#download" class="btn btn-primary">Download</a>
+                <a href="#keysystem" class="btn btn-secondary">Get a Key</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ INFO ═══ -->
+    <section id="info">
+        <div class="container">
+            <div class="section-head">
+                <span class="label">About</span>
+                <h2>Built for scripters</h2>
+                <p>Auris is a lightweight editor and execution client for Roblox Lua. No bloat, just a clean workspace.</p>
+            </div>
+            <div class="grid-3">
+                <div class="card card-hover feature-card">
+                    <div class="feature-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><polyline points="16 6 20 10 16 14"/><polyline points="8 18 4 14 8 10"/><line x1="10" y1="4" x2="14" y2="20"/></svg></div>
+                    <h3>Monaco Editor</h3>
+                    <p>Syntax highlighting, tabbed editing, and a fast search-as-you-type switcher.</p>
+                </div>
+                <div class="card card-hover feature-card">
+                    <div class="feature-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M13 2L3 14h6l-2 8 10-12h-6l2-8z"/></svg></div>
+                    <h3>Script Hub</h3>
+                    <p>Browse and run community scripts directly from the editor. No copy-pasting.</p>
+                </div>
+                <div class="card card-hover feature-card">
+                    <div class="feature-icon"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg></div>
+                    <h3>Key System</h3>
+                    <p>Free 24-hour keys. No account required to generate one.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ KEY SYSTEM ═══ -->
+    <section id="keysystem">
+        <div class="container">
+            <div class="section-head">
+                <span class="label">Key system</span>
+                <h2>Generate or verify a key</h2>
+                <p>Keys are free and valid for 24 hours. If you're logged in, your key is saved to your panel.</p>
+            </div>
+
+            <div class="key-grid">
+                <!-- user panel -->
+                <div class="card key-panel">
+                    <div class="panel-title">
+                        <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7.5" cy="15.5" r="3.6"/><path d="M10 13L19.5 3.5"/><path d="M15.5 7l2.7 2.7"/><path d="M12.7 9.8l2.2 2.2"/></svg>User panel</h3>
+                    </div>
+                    <div class="field">
+                        <label for="userKeyInput">Enter your license key</label>
+                        <input type="text" id="userKeyInput" placeholder="AURIS-XXXX-XXXX-XXXX" />
+                    </div>
+                    <div class="btn-group">
+                        <button class="btn btn-primary btn-sm" id="activateKeyBtn">Activate</button>
+                        <button class="btn btn-secondary btn-sm" id="checkStatusBtn">Check status</button>
+                    </div>
+                    <div id="userStatusMsg" class="status-msg"></div>
+                    <div id="userInfoDisplay" class="hidden" style="margin-top:16px;">
+                        <div class="meta-line"><span class="label">Active key</span><span class="mono" id="activeKeyDisplay">—</span></div>
+                        <div class="meta-line"><span class="label">Status</span><span id="activeStatusDisplay">—</span></div>
+                        <div class="meta-line"><span class="label">Activated</span><span id="activeDateDisplay">—</span></div>
+                    </div>
+                </div>
+
+                <!-- admin panel -->
+                <div class="card key-panel">
+                    <div class="panel-title">
+                        <h3><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3.2l7 2.8v5.6c0 5-3 8.6-7 9.7-4-1.1-7-4.7-7-9.7V6l7-2.8z"/><circle cx="12" cy="12" r="1.2"/><line x1="12" y1="8.5" x2="12" y2="11.5"/></svg>Admin panel</h3>
+                    </div>
+                    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+                        <input type="password" id="adminPassInput" placeholder="Admin password" style="flex:1;min-width:120px;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;" />
+                        <button class="btn btn-secondary btn-sm" id="adminLoginBtn">Login</button>
+                    </div>
+                    <div class="admin-area" id="adminArea">
+                        <div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:10px;">
+                            <input type="text" id="newKeyInput" placeholder="New key (AURIS-...)" style="flex:2;min-width:140px;padding:9px 12px;background:rgba(255,255,255,0.04);border:1px solid var(--border);border-radius:var(--radius-sm);font-size:13px;" />
+                            <button class="btn btn-primary btn-sm" id="addKeyBtn">Add</button>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-secondary btn-sm" id="refreshKeysBtn">Refresh</button>
+                            <button class="btn btn-danger btn-sm" id="clearAllKeysBtn">Clear all</button>
+                        </div>
+                        <div id="adminStatusMsg" class="status-msg"></div>
+                        <div class="key-list" id="keyListContainer">
+                            <div class="empty">No keys loaded.</div>
+                        </div>
+                        <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;font-size:12px;color:var(--text-muted);">
+                            <span>Total: <strong id="totalKeyCount">0</strong></span>
+                            <span>Used: <strong id="usedKeyCount">0</strong></span>
+                            <span>Active: <strong id="activeKeyCount">0</strong></span>
+                        </div>
+                    </div>
+                    <button class="admin-toggle" id="adminToggle">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg>
+                        <span>Admin panel</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ DOWNLOAD ═══ -->
+    <section id="download">
+        <div class="container">
+            <div class="section-head">
+                <span class="label">Download</span>
+                <h2>Get the latest build</h2>
+                <p>Windows 10/11, 64-bit. You'll need a key for first launch.</p>
+            </div>
+            <div class="card" style="padding:32px 34px;">
+                <div style="display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:20px;">
+                    <div>
+                        <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+                            <span style="font-weight:700;font-size:18px;">Auris v1.4.2</span>
+                            <span style="font-size:12px;color:var(--text-muted);font-family:var(--mono);">86 MB</span>
+                            <span style="font-size:12px;color:var(--text-muted);">Windows 10+</span>
+                        </div>
+                        <p style="font-size:14px;color:var(--text-dim);margin:4px 0 0;">Released July 12, 2026</p>
+                    </div>
+                    <button class="btn btn-primary" id="downloadBtn">
+                        <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 3v12.5"/><path d="M6.5 11L12 16.5 17.5 11"/><path d="M4.5 20h15"/></svg>
+                        Download for Windows
+                    </button>
+                </div>
+                <div style="margin-top:18px;padding-top:18px;border-top:1px solid var(--border);font-size:13px;color:var(--text-muted);display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;">
+                    <span>WebView2 runtime required (installed automatically if missing)</span>
+                    <span>SHA-256: <span class="mono" style="font-size:12px;">a3f8d9e2c1b4a5f6...</span></span>
+                </div>
+            </div>
+
+            <div style="margin-top:40px;">
+                <div class="section-head" style="margin-bottom:20px;">
+                    <span class="label">Changelog</span>
+                    <h2 style="font-size:22px;">Recent updates</h2>
+                </div>
+                <div class="changelog">
+                    <details open>
+                        <summary>v1.4.2 — July 12, 2026 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
+                        <div class="body"><p>Fixed a crash when reopening tabs from the dropdown. Tab search now matches partial names.</p></div>
+                    </details>
+                    <details>
+                        <summary>v1.4.0 — June 28, 2026 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
+                        <div class="body"><p>Added tab bar right-click menu and redesigned welcome screen with recent-file thumbnails.</p></div>
+                    </details>
+                    <details>
+                        <summary>v1.3.5 — June 9, 2026 <svg class="chev" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="6 9 12 15 18 9"/></svg></summary>
+                        <div class="body"><p>Editor performance improvements for large scripts. Minor contrast fixes for the dark theme.</p></div>
+                    </details>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ USER PANEL ═══ -->
+    <section id="userpanel">
+        <div class="container">
+            <div class="section-head">
+                <span class="label">Account</span>
+                <h2>User panel</h2>
+                <p>Log in to manage your key and device fingerprint.</p>
+            </div>
+
+            <!-- logged out -->
+            <div id="authView">
+                <div class="card" style="max-width:400px;margin:0 auto;padding:32px 30px;">
+                    <div class="auth-tabs">
+                        <button class="active" id="tabLogin">Log in</button>
+                        <button id="tabRegister">Register</button>
+                    </div>
+                    <div id="loginForm">
+                        <h1 style="font-size:20px;margin-bottom:2px;">Welcome back</h1>
+                        <p style="font-size:14px;color:var(--text-dim);margin-bottom:18px;">Check your key status and reset your HWID.</p>
+                        <div class="field">
+                            <label for="loginUser">Username</label>
+                            <input type="text" id="loginUser" autocomplete="username" />
+                        </div>
+                        <div class="field">
+                            <label for="loginPass">Password</label>
+                            <input type="password" id="loginPass" autocomplete="current-password" />
+                        </div>
+                        <p class="status-msg" id="loginError" style="font-size:13px;"></p>
+                        <button class="btn btn-primary btn-block" id="loginBtn">Log in</button>
+                        <div class="auth-hint">Demo: shadowplayer / demo1234</div>
+                    </div>
+                    <div id="registerForm" class="hidden">
+                        <h1 style="font-size:20px;margin-bottom:2px;">Create account</h1>
+                        <p style="font-size:14px;color:var(--text-dim);margin-bottom:18px;">Optional — you can also generate a key without one.</p>
+                        <div class="field">
+                            <label for="regUser">Username</label>
+                            <input type="text" id="regUser" autocomplete="username" />
+                        </div>
+                        <div class="field">
+                            <label for="regPass">Password</label>
+                            <input type="password" id="regPass" autocomplete="new-password" />
+                        </div>
+                        <p class="status-msg" id="registerError" style="font-size:13px;"></p>
+                        <button class="btn btn-primary btn-block" id="registerBtn">Create account</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- logged in -->
+            <div id="dashView" class="hidden">
+                <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:14px;margin-bottom:20px;">
+                    <div>
+                        <h2 style="font-size:22px;font-weight:700;">Hey, <span id="dashUsername">—</span></h2>
+                        <p style="color:var(--text-dim);font-size:14px;margin:0;">Your key and device status</p>
+                    </div>
+                    <button class="btn btn-secondary btn-sm" id="logoutBtn">Log out</button>
+                </div>
+
+                <div class="dash-grid">
+                    <div class="card">
+                        <div class="panel-title">
+                            <h3 style="font-size:15px;display:flex;align-items:center;gap:8px;">
+                                <svg class="icon" style="width:18px;height:18px;color:var(--text-dim);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="7.5" cy="15.5" r="3.6"/><path d="M10 13L19.5 3.5"/><path d="M15.5 7l2.7 2.7"/><path d="M12.7 9.8l2.2 2.2"/></svg>
+                                Your key
+                            </h3>
+                            <span class="status-badge inactive" id="dashKeyPill">no key</span>
+                        </div>
+                        <div id="dashNoKey">
+                            <p style="font-size:14px;color:var(--text-dim);">No active key found.</p>
+                            <a href="#keysystem" class="btn btn-primary btn-sm" style="margin-top:6px;">Get a key</a>
+                        </div>
+                        <div id="dashHasKey" class="hidden">
+                            <div class="key-display">
+                                <span id="dashKeyValue" style="font-family:var(--mono);">—</span>
+                                <button id="dashCopyKey"><svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9.5" y="9.5" width="11" height="11" rx="2"/><path d="M5.5 14.5v-9a2 2 0 0 1 2-2h9"/></svg></button>
+                            </div>
+                            <div class="meta-line"><span class="label">Expires in</span><span class="mono" id="dashKeyCountdown">—</span></div>
+                            <a href="#keysystem" class="btn btn-secondary btn-sm" style="margin-top:12px;">Manage on key page</a>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="panel-title">
+                            <h3 style="font-size:15px;display:flex;align-items:center;gap:8px;">
+                                <svg class="icon" style="width:18px;height:18px;color:var(--text-dim);" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 3v18"/><path d="M15 3v18"/><path d="M3 9h18"/><path d="M3 15h18"/></svg>
+                                Device (HWID)
+                            </h3>
+                        </div>
+                        <div class="key-display" style="font-size:13px;font-family:var(--mono);" id="dashHwid">—</div>
+                        <p id="hwidCooldownNote" style="font-size:12.5px;color:var(--text-muted);margin:10px 0 14px;">One reset per 24 hours.</p>
+                        <button class="btn btn-secondary btn-sm" id="resetHwidBtn">Reset HWID</button>
+                    </div>
+                </div>
+
+                <div class="grid-3" style="margin-top:18px;">
+                    <a href="#download" class="card card-hover" style="text-align:center;padding:22px 18px;">
+                        <div style="margin-bottom:10px;color:var(--text-dim);">
+                            <svg style="width:28px;height:28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3v12.5"/><path d="M6.5 11L12 16.5 17.5 11"/><path d="M4.5 20h15"/></svg>
+                        </div>
+                        <h3 style="font-size:14px;font-weight:600;">Download</h3>
+                        <p style="font-size:13px;color:var(--text-dim);margin:0;">Get the latest build</p>
+                    </a>
+                    <a href="https://discord.gg/mG2QCJRTJK" target="_blank" rel="noopener" class="card card-hover" style="text-align:center;padding:22px 18px;">
+                        <div style="margin-bottom:10px;color:var(--text-dim);">
+                            <svg style="width:28px;height:28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8.5 3.5C6.8 4.2 4.8 6 4 7.5c-1.2 2.2-1.5 5-1.5 6.5 0 2.5 1.2 5 3 6.5 1.8 1.5 4.2 2.5 6.5 2.5s4.7-1 6.5-2.5c1.8-1.5 3-4 3-6.5 0-1.5-.3-4.3-1.5-6.5-.8-1.5-2.8-3.3-4.5-4"/><path d="M8.5 6.5c-1.2.8-2.5 2-3 3.5"/><path d="M15.5 6.5c1.2.8 2.5 2 3 3.5"/><circle cx="12" cy="12" r="2"/><path d="M8.5 13.5c.5 1 1.8 1.5 3.5 1.5s3-.5 3.5-1.5"/></svg>
+                        </div>
+                        <h3 style="font-size:14px;font-weight:600;">Discord</h3>
+                        <p style="font-size:13px;color:var(--text-dim);margin:0;">Join the community</p>
+                    </a>
+                    <a href="#info" class="card card-hover" style="text-align:center;padding:22px 18px;">
+                        <div style="margin-bottom:10px;color:var(--text-dim);">
+                            <svg style="width:28px;height:28px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                        </div>
+                        <h3 style="font-size:14px;font-weight:600;">FAQ</h3>
+                        <p style="font-size:13px;color:var(--text-dim);margin:0;">Common questions</p>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ DISCORD BAND ═══ -->
+    <section style="border-bottom:none;padding:40px 0 60px;">
+        <div class="container">
+            <div class="card discord-band">
+                <div class="left">
+                    <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M8.5 3.5C6.8 4.2 4.8 6 4 7.5c-1.2 2.2-1.5 5-1.5 6.5 0 2.5 1.2 5 3 6.5 1.8 1.5 4.2 2.5 6.5 2.5s4.7-1 6.5-2.5c1.8-1.5 3-4 3-6.5 0-1.5-.3-4.3-1.5-6.5-.8-1.5-2.8-3.3-4.5-4"/><path d="M8.5 6.5c-1.2.8-2.5 2-3 3.5"/><path d="M15.5 6.5c1.2.8 2.5 2 3 3.5"/><circle cx="12" cy="12" r="2"/><path d="M8.5 13.5c.5 1 1.8 1.5 3.5 1.5s3-.5 3.5-1.5"/></svg>
+                    <div>
+                        <h2>Join the Discord</h2>
+                        <p>Bug reports, updates, and script requests — all in one place.</p>
+                    </div>
+                </div>
+                <a href="https://discord.gg/mG2QCJRTJK" target="_blank" rel="noopener" class="btn btn-primary">Join server</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ═══ FOOTER ═══ -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand">
+                    <span class="nav-logo">AURIS<span class="dot">.</span></span>
+                    <p>Monaco-powered script editor and execution client for Roblox.</p>
+                </div>
+                <div class="footer-col">
+                    <h4>Navigate</h4>
+                    <a href="#home">Home</a>
+                    <a href="#info">Info</a>
+                    <a href="#keysystem">Keys</a>
+                    <a href="#download">Download</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Account</h4>
+                    <a href="#userpanel">User panel</a>
+                    <a href="#keysystem">Admin</a>
+                </div>
+                <div class="footer-col">
+                    <h4>Community</h4>
+                    <a href="https://discord.gg/mG2QCJRTJK" target="_blank" rel="noopener">Discord</a>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; <span id="year"></span> Auris.</p>
+                <p class="disclaimer">Provided for educational and private-server use. You are responsible for complying with any game's terms of service.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- ═══════════════════════════════════════════════════ -->
+    <!-- ═══ JAVASCRIPT ═══ -->
+    <!-- ═══════════════════════════════════════════════════ -->
+    <script>
+        (function() {
+            'use strict';
+
+            // ─── NAV ───
+            const navbar = document.getElementById('navbar');
+            const navToggle = document.getElementById('navToggle');
+            const mobilePanel = document.getElementById('mobilePanel');
+            const mobileClose = document.getElementById('mobileClose');
+            const scrim = document.getElementById('scrim');
+
+            window.addEventListener('scroll', () => {
+                navbar.classList.toggle('scrolled', window.scrollY > 30);
+            }, { passive: true });
+
+            function openMobile() {
+                mobilePanel.classList.add('open');
+                scrim.classList.add('open');
+                document.body.style.overflow = 'hidden';
+            }
+
+            function closeMobile() {
+                mobilePanel.classList.remove('open');
+                scrim.classList.remove('open');
+                document.body.style.overflow = '';
+            }
+
+            navToggle.addEventListener('click', openMobile);
+            mobileClose.addEventListener('click', closeMobile);
+            scrim.addEventListener('click', closeMobile);
+            mobilePanel.querySelectorAll('a').forEach(a => a.addEventListener('click', closeMobile));
+
+            // ─── YEAR ───
+            document.getElementById('year').textContent = new Date().getFullYear();
+
+            // ─── TOAST ───
+            function showToast(msg, type) {
+                let stack = document.querySelector('.toast-stack');
+                if (!stack) {
+                    stack = document.createElement('div');
+                    stack.className = 'toast-stack';
+                    document.body.appendChild(stack);
+                }
+                const el = document.createElement('div');
+                el.className = 'toast' + (type === 'error' ? ' error' : '');
+                el.textContent = msg;
+                stack.appendChild(el);
+                setTimeout(() => {
+                    el.style.opacity = '0';
+                    el.style.transition = 'opacity 0.25s';
+                    setTimeout(() => el.remove(), 260);
+                }, 3200);
+            }
+
+            // ─── CONFIRM MODAL ───
+            function confirmAction(msg, label) {
+                return new Promise((resolve) => {
+                    const scrim = document.createElement('div');
+                    scrim.className = 'modal-scrim';
+                    scrim.innerHTML =
+                        '<div class="card modal-box"><p>' + msg +
+                        '</p><div class="modal-actions"><button class="btn btn-secondary" data-act="cancel">Cancel</button>' +
+                        '<button class="btn btn-primary" data-act="ok">' + (label || 'Confirm') +
+                        '</button></div></div>';
+                    document.body.appendChild(scrim);
+                    scrim.addEventListener('click', (e) => {
+                        const act = e.target.closest('[data-act]')?.getAttribute('data-act');
+                        if (e.target === scrim || act === 'cancel') { scrim.remove();
+                            resolve(false); }
+                        if (act === 'ok') { scrim.remove();
+                            resolve(true); }
+                    });
+                });
+            }
+
+            // ─── PARTICLES — thin rice-like strokes, continuous rain ───
+            const canvas = document.getElementById('heroCanvas');
+            const ctx = canvas.getContext('2d');
+            let W, H, dpr = Math.min(window.devicePixelRatio || 1, 2);
+
+            function resizeCanvas() {
+                const rect = canvas.parentElement.getBoundingClientRect();
+                W = rect.width;
+                H = rect.height;
+                canvas.width = Math.round(W * dpr);
+                canvas.height = Math.round(H * dpr);
+                canvas.style.width = W + 'px';
+                canvas.style.height = H + 'px';
+                ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+            }
+
+            // — text sampling for reveal —
+            const WORD = 'AURIS';
+            let textPixels = null;
+            let textW = 0,
+                textH = 0,
+                textX = 0,
+                textY = 0;
+            let revealMap = null;
+            let settled = [];
+
+            function sampleText() {
+                const off = document.createElement('canvas');
+                off.width = W;
+                off.height = H;
+                const octx = off.getContext('2d');
+                let fs = Math.min(W * 0.16, H * 0.36);
+                fs = Math.max(40, Math.min(fs, 200));
+                octx.font = '700 ' + fs + 'px "Inter", "Segoe UI", sans-serif';
+                let tw = octx.measureText(WORD).width;
+                const maxW = W * 0.86;
+                if (tw > maxW) { fs *= maxW / tw;
+                    octx.font = '700 ' + fs + 'px "Inter", "Segoe UI", sans-serif'; }
+                const ty = H * 0.44;
+                octx.fillStyle = '#fff';
+                octx.textAlign = 'center';
+                octx.textBaseline = 'middle';
+                octx.fillText(WORD, W / 2, ty);
+
+                const data = octx.getImageData(0, 0, W, H).data;
+                textPixels = new Uint8Array(W * H);
+                const step = 3;
+                const pts = [];
+                for (let y = 0; y < H; y += step) {
+                    for (let x = 0; x < W; x += step) {
+                        const idx = (y * W + x) * 4;
+                        if (data[idx + 3] > 120) {
+                            pts.push({ x: x + (Math.random() - 0.5) * 1.5, y: y + (Math.random() - 0.5) * 1.5 });
+                            textPixels[y * W + x] = 1;
+                        }
+                    }
+                }
+                // shuffle
+                for (let i = pts.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [pts[i], pts[j]] = [pts[j], pts[i]];
+                }
+                revealMap = new Uint8Array(W * H);
+                settled = [];
+                return pts;
+            }
+
+            let targetPoints = [];
+            let aimed = [];
+            let ambient = [];
+            const AMBIENT_COUNT = 80;
+            const REVEAL_RATE = 2; // points per frame
+
+            function spawnAmbient() {
+                return {
+                    x: Math.random() * W,
+                    y: -10 - Math.random() * H * 0.6,
+                    vy: 0.8 + Math.random() * 1.8,
+                    len: 4 + Math.random() * 12,
+                    op: 0.15 + Math.random() * 0.35,
+                };
+            }
+
+            function initParticles() {
+                targetPoints = sampleText();
+                aimed = [];
+                ambient = [];
+                for (let i = 0; i < AMBIENT_COUNT; i++) ambient.push(spawnAmbient());
+            }
+
+            function releaseAimed() {
+                for (let i = 0; i < REVEAL_RATE && targetPoints.length > 0; i++) {
+                    const t = targetPoints.pop();
+                    aimed.push({
+                        x: t.x,
+                        targetY: t.y,
+                        y: -20 - Math.random() * 180,
+                        vy: 2.8 + Math.random() * 2.0,
+                        done: false,
+                    });
+                }
+            }
+
+            let frameCount = 0;
+
+            function drawParticles() {
+                ctx.clearRect(0, 0, W, H);
+                frameCount++;
+
+                // ambient rain — thin strokes
+                ctx.strokeStyle = 'rgba(255,255,255,0.35)';
+                for (const p of ambient) {
+                    p.y += p.vy;
+                    if (p.y > H + 20) {
+                        Object.assign(p, spawnAmbient());
+                        p.y = -10 - Math.random() * 40;
+                    }
+                    ctx.globalAlpha = p.op;
+                    ctx.lineWidth = 0.6 + Math.random() * 0.4;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x + (Math.random() - 0.5) * 1.2, p.y - p.len);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // aimed particles — thin strokes falling toward text
+                releaseAimed();
+                ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+                ctx.lineWidth = 0.8;
+                for (let i = aimed.length - 1; i >= 0; i--) {
+                    const p = aimed[i];
+                    p.y += p.vy;
+                    if (p.y >= p.targetY) {
+                        // reveal pixel
+                        const px = Math.round(p.x);
+                        const py = Math.round(p.y);
+                        if (px >= 0 && px < W && py >= 0 && py < H) {
+                            const idx = py * W + px;
+                            if (textPixels[idx] === 1) {
+                                revealMap[idx] = 1;
+                                settled.push({ x: px, y: py });
+                            }
+                        }
+                        aimed.splice(i, 1);
+                        continue;
+                    }
+                    ctx.globalAlpha = 0.7 + Math.random() * 0.25;
+                    ctx.beginPath();
+                    ctx.moveTo(p.x, p.y);
+                    ctx.lineTo(p.x + (Math.random() - 0.5) * 0.8, p.y - 6 - Math.random() * 6);
+                    ctx.stroke();
+                }
+                ctx.globalAlpha = 1;
+
+                // draw revealed text — subtle glow
+                if (settled.length > 0) {
+                    const imgData = ctx.createImageData(W, H);
+                    const data = imgData.data;
+                    const r = revealMap;
+                    for (let i = 0; i < r.length; i++) {
+                        if (r[i] === 1) {
+                            const idx = i * 4;
+                            data[idx] = 255;
+                            data[idx + 1] = 255;
+                            data[idx + 2] = 255;
+                            data[idx + 3] = 255;
+                        }
+                    }
+                    ctx.putImageData(imgData, 0, 0);
+
+                    // soft glow
+                    const grad = ctx.createRadialGradient(W / 2, H * 0.44, 0, W / 2, H * 0.44, Math.max(W, H) * 0.28);
+                    grad.addColorStop(0, 'rgba(255,255,255,0.025)');
+                    grad.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, W, H);
+                }
+
+                // subtle ambient glow on text area
+                if (settled.length > 0 && settled.length < targetPoints.length * 0.3) {
+                    const grad = ctx.createRadialGradient(W / 2, H * 0.44, 0, W / 2, H * 0.44, 200);
+                    grad.addColorStop(0, 'rgba(255,255,255,0.02)');
+                    grad.addColorStop(1, 'rgba(255,255,255,0)');
+                    ctx.fillStyle = grad;
+                    ctx.fillRect(0, 0, W, H);
+                }
+
+                requestAnimationFrame(drawParticles);
+            }
+
+            // handle resize
+            let resizeTimer;
+            window.addEventListener('resize', () => {
+                clearTimeout(resizeTimer);
+                resizeTimer = setTimeout(() => {
+                    resizeCanvas();
+                    initParticles();
+                }, 200);
+            });
+
+            resizeCanvas();
+            initParticles();
+            drawParticles();
+
+            // ─── KEY SYSTEM (localStorage) ───
+            const STORAGE_KEY = 'auris_keys_data';
+
+            function getData() {
+                try { return JSON.parse(localStorage.getItem(STORAGE_KEY)) || { keys: {}, users: {} }; } catch { return { keys: {},
+                        users: {} }; }
+            }
+
+            function saveData(data) { localStorage.setItem(STORAGE_KEY, JSON.stringify(data)); }
+
+            function genKey() {
+                const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+                let k = 'AURIS-';
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) k += chars[Math.floor(Math.random() * chars.length)];
+                    if (i < 3) k += '-';
+                }
+                return k;
+            }
+
+            const ADMIN_PASS = 'admin123';
+            let adminLoggedIn = false;
+
+            // DOM refs
+            const userKeyInput = document.getElementById('userKeyInput');
+            const activateKeyBtn = document.getElementById('activateKeyBtn');
+            const checkStatusBtn = document.getElementById('checkStatusBtn');
+            const userStatusMsg = document.getElementById('userStatusMsg');
+            const userInfoDisplay = document.getElementById('userInfoDisplay');
+            const activeKeyDisplay = document.getElementById('activeKeyDisplay');
+            const activeStatusDisplay = document.getElementById('activeStatusDisplay');
+            const activeDateDisplay = document.getElementById('activeDateDisplay');
+
+            const adminPassInput = document.getElementById('adminPassInput');
+            const adminLoginBtn = document.getElementById('adminLoginBtn');
+            const adminArea = document.getElementById('adminArea');
+            const adminToggle = document.getElementById('adminToggle');
+            const newKeyInput = document.getElementById('newKeyInput');
+            const addKeyBtn = document.getElementById('addKeyBtn');
+            const refreshKeysBtn = document.getElementById('refreshKeysBtn');
+            const clearAllKeysBtn = document.getElementById('clearAllKeysBtn');
+            const adminStatusMsg = document.getElementById('adminStatusMsg');
+            const keyListContainer = document.getElementById('keyListContainer');
+            const totalKeyCount = document.getElementById('totalKeyCount');
+            const usedKeyCount = document.getElementById('usedKeyCount');
+            const activeKeyCount = document.getElementById('activeKeyCount');
+
+            function setUserStatus(msg, type) {
+                userStatusMsg.textContent = msg;
+                userStatusMsg.className = 'status-msg ' + type;
+            }
+
+            function clearUserStatus() { userStatusMsg.className = 'status-msg';
+                userStatusMsg.textContent = ''; }
+
+            function updateUserInfo() {
+                const data = getData();
+                const stored = localStorage.getItem('auris_active_key');
+                if (stored && data.keys[stored]) {
+                    const kd = data.keys[stored];
+                    activeKeyDisplay.textContent = stored;
+                    activeStatusDisplay.textContent = kd.used ? 'Active' : 'Inactive';
+                    activeDateDisplay.textContent = kd.activatedAt || '—';
+                    userInfoDisplay.classList.remove('hidden');
+                } else {
+                    userInfoDisplay.classList.add('hidden');
+                    localStorage.removeItem('auris_active_key');
+                }
+            }
+
+            function activateKey(key) {
+                const data = getData();
+                const trimmed = key.trim().toUpperCase();
+                if (!trimmed) { setUserStatus('Please enter a key.', 'error'); return; }
+                if (!data.keys[trimmed]) { setUserStatus('Invalid key.', 'error'); return; }
+                if (data.keys[trimmed].used) { setUserStatus('This key has already been used.', 'error'); return; }
+                data.keys[trimmed].used = true;
+                data.keys[trimmed].activatedAt = new Date().toLocaleString();
+                saveData(data);
+                localStorage.setItem('auris_active_key', trimmed);
+                setUserStatus('Key activated successfully!', 'success');
+                updateUserInfo();
+                renderKeyList();
+            }
+
+            function checkStatus() {
+                const stored = localStorage.getItem('auris_active_key');
+                if (!stored) { setUserStatus('No active key found.', 'info'); return; }
+                const data = getData();
+                if (data.keys[stored] && data.keys[stored].used) {
+                    setUserStatus('Your key is active and valid.', 'success');
+                    updateUserInfo();
+                } else {
+                    setUserStatus('Your key is no longer valid.', 'error');
+                    localStorage.removeItem('auris_active_key');
+                    userInfoDisplay.classList.add('hidden');
+                }
+            }
+
+            function setAdminStatus(msg, type) {
+                adminStatusMsg.textContent = msg;
+                adminStatusMsg.className = 'status-msg ' + type;
+            }
+
+            function clearAdminStatus() { adminStatusMsg.className = 'status-msg';
+                adminStatusMsg.textContent = ''; }
+
+            function renderKeyList() {
+                const data = getData();
+                const keys = Object.keys(data.keys);
+                if (!keys.length) {
+                    keyListContainer.innerHTML = '<div class="empty">No keys.</div>';
+                    totalKeyCount.textContent = '0';
+                    usedKeyCount.textContent = '0';
+                    activeKeyCount.textContent = '0';
+                    return;
+                }
+                let html = '';
+                let used = 0,
+                    active = 0;
+                for (const k of keys) {
+                    const info = data.keys[k];
+                    const isUsed = info.used || false;
+                    if (isUsed) used++;
+                    else active++;
+                    const status = isUsed ? 'Used' : 'Active';
+                    const cls = isUsed ? 'expired' : 'active';
+                    html +=
+                        '<div class="key-item"><span class="code">' + k + '</span><span class="status-badge ' + cls +
+                        '">' + status +
+                        '</span><div class="actions"><button data-key="' + k +
+                        '" class="delete-key"><svg style="width:14px;height:14px;" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4.5 7h15"/><path d="M9.5 7V4.3h5V7"/><path d="M6.5 7L7.4 20h9.2L17.5 7"/></svg></button></div></div>';
+                }
+                keyListContainer.innerHTML = html;
+                totalKeyCount.textContent = keys.length;
+                usedKeyCount.textContent = used;
+                activeKeyCount.textContent = active;
+
+                document.querySelectorAll('.delete-key').forEach(btn => {
+                    btn.addEventListener('click', function() {
+                        const key = this.dataset.key;
+                        if (!confirm('Delete key "' + key + '"?')) return;
+                        const data = getData();
+                        if (data.keys[key]) {
+                            if (localStorage.getItem('auris_active_key') === key) {
+                                localStorage.removeItem('auris_active_key');
+                                userInfoDisplay.classList.add('hidden');
+                            }
+                            delete data.keys[key];
+                            saveData(data);
+                            renderKeyList();
+                            updateUserInfo();
+                            setAdminStatus('Key deleted.', 'info');
+                            setTimeout(clearAdminStatus, 2000);
+                        }
+                    });
+                });
+            }
+
+            function addKey(key) {
+                const trimmed = key.trim().toUpperCase();
+                if (!trimmed) { setAdminStatus('Enter a key.', 'error'); return; }
+                if (!trimmed.startsWith('AURIS-')) { setAdminStatus('Key must start with AURIS-', 'error'); return; }
+                const data = getData();
+                if (data.keys[trimmed]) { setAdminStatus('Key already exists.', 'error'); return; }
+                data.keys[trimmed] = { used: false, activatedAt: null };
+                saveData(data);
+                renderKeyList();
+                setAdminStatus('Key added.', 'success');
+                newKeyInput.value = '';
+                setTimeout(clearAdminStatus, 2000);
+            }
+
+            function clearAllKeys() {
+                if (!confirm('Delete ALL keys? This cannot be undone.')) return;
+                const data = getData();
+                data.keys = {};
+                saveData(data);
+                localStorage.removeItem('auris_active_key');
+                userInfoDisplay.classList.add('hidden');
+                renderKeyList();
+                setAdminStatus('All keys cleared.', 'info');
+                setTimeout(clearAdminStatus, 2000);
+            }
+
+            // admin toggle
+            let adminOpen = false;
+            adminToggle.addEventListener('click', () => {
+                adminOpen = !adminOpen;
+                adminArea.classList.toggle('open', adminOpen);
+                adminToggle.querySelector('.icon').classList.toggle('open', adminOpen);
+            });
+
+            adminLoginBtn.addEventListener('click', () => {
+                const pass = adminPassInput.value.trim();
+                if (pass === ADMIN_PASS) {
+                    adminLoggedIn = true;
+                    adminPassInput.value = '';
+                    setAdminStatus('Logged in as admin.', 'success');
+                    adminArea.classList.add('open');
+                    adminOpen = true;
+                    adminToggle.querySelector('.icon').classList.add('open');
+                    renderKeyList();
+                    setTimeout(clearAdminStatus, 2000);
+                } else {
+                    setAdminStatus('Incorrect password.', 'error');
+                    setTimeout(clearAdminStatus, 2000);
+                }
+            });
+
+            addKeyBtn.addEventListener('click', () => {
+                if (!adminLoggedIn) { setAdminStatus('Please login as admin first.', 'error'); return; }
+                const val = newKeyInput.value.trim();
+                if (val) addKey(val);
+                else { const k = genKey();
+                    newKeyInput.value = k;
+                    addKey(k); }
+            });
+
+            refreshKeysBtn.addEventListener('click', () => {
+                if (!adminLoggedIn) { setAdminStatus('Please login as admin first.', 'error'); return; }
+                renderKeyList();
+                setAdminStatus('Refreshed.', 'info');
+                setTimeout(clearAdminStatus, 1500);
+            });
+
+            clearAllKeysBtn.addEventListener('click', () => {
+                if (!adminLoggedIn) { setAdminStatus('Please login as admin first.', 'error'); return; }
+                clearAllKeys();
+            });
+
+            activateKeyBtn.addEventListener('click', () => activateKey(userKeyInput.value));
+            userKeyInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') activateKeyBtn.click(); });
+            checkStatusBtn.addEventListener('click', checkStatus);
+
+            // seed demo keys
+            const initData = getData();
+            if (Object.keys(initData.keys).length === 0) {
+                const demo = ['AURIS-DEMO-0001', 'AURIS-DEMO-0002', 'AURIS-DEMO-0003', 'AURIS-DEMO-0004',
+                    'AURIS-DEMO-0005'
+                ];
+                for (const k of demo) initData.keys[k] = { used: false, activatedAt: null };
+                saveData(initData);
+            }
+            renderKeyList();
+            updateUserInfo();
+            setTimeout(checkStatus, 400);
+
+            // ─── USER PANEL AUTH ───
+            const DB_USERS = 'auris_users';
+            const DB_SESSION = 'auris_session';
+
+            function getUsers() {
+                try { return JSON.parse(localStorage.getItem(DB_USERS)) || []; } catch { return []; }
+            }
+
+            function saveUsers(users) { localStorage.setItem(DB_USERS, JSON.stringify(users)); }
+
+            function hash(str) {
+                let h = 0;
+                for (let i = 0; i < str.length; i++) h = (Math.imul(31, h) + str.charCodeAt(i)) | 0;
+                return h.toString(16);
+            }
+
+            function genId() {
+                return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+                    const r = (Math.random() * 16) | 0;
+                    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+                    return v.toString(16);
+                });
+            }
+
+            function genHwid() {
+                const chars = 'ABCDEF0123456789';
+                let out = '';
+                for (let i = 0; i < 32; i++) {
+                    out += chars[Math.floor(Math.random() * chars.length)];
+                    if ((i + 1) % 8 === 0 && i < 31) out += '-';
+                }
+                return out;
+            }
+
+            function seedUsers() {
+                if (getUsers().length) return;
+                const now = Date.now();
+                saveUsers([{
+                    id: genId(),
+                    username: 'admin',
+                    passwordHash: hash('admin123'),
+                    role: 'admin',
+                    hwid: genHwid(),
+                    createdAt: now - 86400000 * 40,
+                    lastHwidReset: 0,
+                    banned: false,
+                    keyValue: null,
+                    keyCreatedAt: null,
+                    keyExpiresAt: null,
+                }, {
+                    id: genId(),
+                    username: 'shadowplayer',
+                    passwordHash: hash('demo1234'),
+                    role: 'user',
+                    hwid: genHwid(),
+                    createdAt: now - 86400000 * 11,
+                    lastHwidReset: 0,
+                    banned: false,
+                    keyValue: 'AURIS-7F2K-91ZQ-M0XR',
+                    keyCreatedAt: now - 3600000 * 4,
+                    keyExpiresAt: now + 3600000 * 20,
+                }, {
+                    id: genId(),
+                    username: 'nightowl',
+                    passwordHash: hash('demo1234'),
+                    role: 'user',
+                    hwid: genHwid(),
+                    createdAt: now - 86400000 * 2,
+                    lastHwidReset: 0,
+                    banned: false,
+                    keyValue: 'AURIS-3D8B-77TT-QQ1L',
+                    keyCreatedAt: now - 86400000 * 2,
+                    keyExpiresAt: now - 3600000 * 3,
+                }, ]);
+            }
+            seedUsers();
+
+            function getCurrentUser() {
+                const id = localStorage.getItem(DB_SESSION);
+                if (!id) return null;
+                return getUsers().find(u => u.id === id) || null;
+            }
+
+            function updateUser(id, changes) {
+                const users = getUsers();
+                const idx = users.findIndex(u => u.id === id);
+                if (idx === -1) return null;
+                users[idx] = { ...users[idx], ...changes };
+                saveUsers(users);
+                return users[idx];
+            }
+
+            function loginUser(username, password) {
+                const users = getUsers();
+                const user = users.find(u => u.username.toLowerCase() === username.trim().toLowerCase());
+                if (!user) return { ok: false, error: 'No account with that username.' };
+                if (user.banned) return { ok: false, error: 'This account has been banned.' };
+                if (user.passwordHash !== hash(password)) return { ok: false, error: 'Incorrect password.' };
+                localStorage.setItem(DB_SESSION, user.id);
+                return { ok: true, user };
+            }
+
+            function registerUser(username, password) {
+                username = username.trim();
+                if (username.length < 3) return { ok: false, error: 'Username needs at least 3 characters.' };
+                if (password.length < 4) return { ok: false, error: 'Password needs at least 4 characters.' };
+                const users = getUsers();
+                if (users.some(u => u.username.toLowerCase() === username.toLowerCase())) {
+                    return { ok: false, error: 'Username already taken.' };
+                }
+                const user = {
+                    id: genId(),
+                    username,
+                    passwordHash: hash(password),
+                    role: 'user',
+                    hwid: genHwid(),
+                    createdAt: Date.now(),
+                    lastHwidReset: 0,
+                    banned: false,
+                    keyValue: null,
+                    keyCreatedAt: null,
+                    keyExpiresAt: null,
+                };
+                users.push(user);
+                saveUsers(users);
+                localStorage.setItem(DB_SESSION, user.id);
+                return { ok: true, user };
+            }
+
+            function logoutUser() { localStorage.removeItem(DB_SESSION); }
+
+            // ─── USER PANEL UI ───
+            const authView = document.getElementById('authView');
+            const dashView = document.getElementById('dashView');
+            const loginForm = document.getElementById('loginForm');
+            const registerForm = document.getElementById('registerForm');
+            const tabLogin = document.getElementById('tabLogin');
+            const tabRegister = document.getElementById('tabRegister');
+            const loginUserInput = document.getElementById('loginUser');
+            const loginPassInput = document.getElementById('loginPass');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+            const regUserInput = document.getElementById('regUser');
+            const regPassInput = document.getElementById('regPass');
+            const registerBtn = document.getElementById('registerBtn');
+            const registerError = document.getElementById('registerError');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const dashUsername = document.getElementById('dashUsername');
+            const dashKeyPill = document.getElementById('dashKeyPill');
+            const dashNoKey = document.getElementById('dashNoKey');
+            const dashHasKey = document.getElementById('dashHasKey');
+            const dashKeyValue = document.getElementById('dashKeyValue');
+            const dashKeyCountdown = document.getElementById('dashKeyCountdown');
+            const dashHwid = document.getElementById('dashHwid');
+            const dashCopyKey = document.getElementById('dashCopyKey');
+            const resetHwidBtn = document.getElementById('resetHwidBtn');
+            const hwidCooldownNote = document.getElementById('hwidCooldownNote');
+            let dashTimer = null;
+
+            function renderUserPanel() {
+                const user = getCurrentUser();
+                const loggedIn = !!user;
+                authView.classList.toggle('hidden', loggedIn);
+                dashView.classList.toggle('hidden', !loggedIn);
+                if (!loggedIn) return;
+
+                dashUsername.textContent = user.username;
+                dashHwid.textContent = user.hwid;
+
+                const key = user.keyValue ? { value: user.keyValue, expiresAt: user.keyExpiresAt } : null;
+                const valid = key && key.expiresAt && key.expiresAt > Date.now();
+
+                if (valid) {
+                    dashKeyPill.textContent = 'active';
+                    dashKeyPill.className = 'status-badge active';
+                    dashNoKey.classList.add('hidden');
+                    dashHasKey.classList.remove('hidden');
+                    dashKeyValue.textContent = key.value;
+                    if (dashTimer) clearInterval(dashTimer);
+                    const tick = () => {
+                        const left = key.expiresAt - Date.now();
+                        if (left <= 0) { clearInterval(dashTimer);
+                            renderUserPanel(); return; }
+                        const s = Math.floor(left / 1000);
+                        const h = Math.floor(s / 3600);
+                        const m = Math.floor((s % 3600) / 60);
+                        const sec = s % 60;
+                        dashKeyCountdown.textContent = [h, m, sec].map(v => String(v).padStart(2, '0')).join(':');
+                    };
+                    tick();
+                    dashTimer = setInterval(tick, 1000);
+                } else {
+                    dashKeyPill.textContent = 'no key';
+                    dashKeyPill.className = 'status-badge inactive';
+                    dashNoKey.classList.remove('hidden');
+                    dashHasKey.classList.add('hidden');
+                    if (dashTimer) clearInterval(dashTimer);
+                }
+
+                const sinceReset = Date.now() - (user.lastHwidReset || 0);
+                const cooldown = 24 * 60 * 60 * 1000;
+                if (user.lastHwidReset && sinceReset < cooldown) {
+                    resetHwidBtn.setAttribute('disabled', 'true');
+                    const left = cooldown - sinceReset;
+                    const s = Math.floor(left / 1000);
+                    const h = Math.floor(s / 3600);
+                    const m = Math.floor((s % 3600) / 60);
+                    hwidCooldownNote.textContent = 'Next reset in ' + h + 'h ' + m + 'm.';
+                } else {
+                    resetHwidBtn.removeAttribute('disabled');
+                    hwidCooldownNote.textContent = 'One reset per 24 hours.';
+                }
+            }
+
+            tabLogin.addEventListener('click', () => {
+                tabLogin.classList.add('active');
+                tabRegister.classList.remove('active');
+                loginForm.classList.remove('hidden');
+                registerForm.classList.add('hidden');
+                loginError.textContent = '';
+            });
+            tabRegister.addEventListener('click', () => {
+                tabRegister.classList.add('active');
+                tabLogin.classList.remove('active');
+                registerForm.classList.remove('hidden');
+                loginForm.classList.add('hidden');
+                registerError.textContent = '';
+            });
+
+            loginBtn.addEventListener('click', () => {
+                const res = loginUser(loginUserInput.value, loginPassInput.value);
+                if (res.ok) { loginError.textContent = '';
+                    showToast('Welcome back, ' + res.user.username + '.');
+                    renderUserPanel(); } else loginError.textContent = res.error;
+            });
+
+            registerBtn.addEventListener('click', () => {
+                const res = registerUser(regUserInput.value, regPassInput.value);
+                if (res.ok) { registerError.textContent = '';
+                    showToast('Account created. You are logged in.');
+                    renderUserPanel(); } else registerError.textContent = res.error;
+            });
+
+            logoutBtn.addEventListener('click', () => {
+                logoutUser();
+                showToast('Logged out.');
+                if (dashTimer) clearInterval(dashTimer);
+                renderUserPanel();
+            });
+
+            dashCopyKey.addEventListener('click', async () => {
+                try {
+                    await navigator.clipboard.writeText(dashKeyValue.textContent);
+                    showToast('Key copied.');
+                } catch { showToast('Could not copy automatically.', 'error'); }
+            });
+
+            resetHwidBtn.addEventListener('click', async () => {
+                const ok = await confirmAction('Reset your HWID? Your key will move to this device.', 'Reset');
+                if (!ok) return;
+                const user = getCurrentUser();
+                updateUser(user.id, { hwid: genHwid(), lastHwidReset: Date.now() });
+                showToast('HWID reset.');
+                renderUserPanel();
+            });
+
+            renderUserPanel();
+
+            // ─── DOWNLOAD BUTTON ───
+            document.getElementById('downloadBtn').addEventListener('click', () => {
+                showToast('Download started (simulated — replace with your real installer URL).');
+                // simulate download
+                const a = document.createElement('a');
+                a.href = '#';
+                a.download = 'Auris_v1.4.2_Setup.exe';
+                a.style.display = 'none';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+
+            // ─── ACTIVE NAV LINK ───
+            const sections = document.querySelectorAll('section[id]');
+            const navLinks = document.querySelectorAll('.nav-links a, .mobile-panel nav a');
+            window.addEventListener('scroll', () => {
+                let current = '';
+                sections.forEach(sec => {
+                    const top = sec.offsetTop - 100;
+                    if (window.scrollY >= top) current = sec.id;
+                });
+                navLinks.forEach(a => {
+                    a.classList.toggle('active', a.getAttribute('href') === '#' + current);
+                });
+            }, { passive: true });
+
+        })();
+    </script>
+
 </body>
 </html>
