@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Download — Auris</title>
+<meta name="description" content="Download the latest build of Auris for Windows.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="index.html" class="nav-logo">AURIS<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="information.html">Information</a></li>
+      <li><a href="keysystem.html">Key System</a></li>
+      <li><a href="download.html">Download</a></li>
+      <li><a href="user.html">Panel</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">
+        <span data-icon="chat"></span><span class="btn-discord-label">Discord</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span data-icon="menu"></span></button>
+    </div>
+  </div>
+</nav>
+<div class="scrim" id="scrim"></div>
+<aside class="mobile-panel" id="mobilePanel">
+  <div class="mobile-panel-head">
+    <span class="nav-logo">AURIS<span class="dot">.</span></span>
+    <button id="mobileClose" aria-label="Close menu" style="background:none;border:none;color:var(--paper)"><span data-icon="close"></span></button>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="information.html">Information</a>
+    <a href="keysystem.html">Key System</a>
+    <a href="download.html">Download</a>
+    <a href="user.html">Panel</a>
+  </nav>
+</aside>
+
+<header class="page-header">
+  <div class="container">
+    <span class="eyebrow">Download</span>
+    <h1>Get the current build</h1>
+    <p class="lead">You'll need a key to get past first launch — grab one from the Key System page if you haven't already.</p>
+  </div>
+</header>
+
+<section style="padding-top:0">
+  <div class="container">
+    <div class="dash-grid">
+      <div class="card">
+        <div class="panel-title">
+          <h3><span data-icon="download"></span>Auris for Windows</h3>
+          <span class="mono-id">v1.4.2</span>
+        </div>
+        <div class="meta-line"><span>Released</span><span>July 12, 2026</span></div>
+        <div class="meta-line"><span>Size</span><span>86 MB</span></div>
+        <div class="meta-line"><span>Requires</span><span>Windows 10/11, 64-bit</span></div>
+        <a href="#" class="btn btn-primary btn-block" style="margin-top:22px" id="downloadBtn"><span data-icon="download"></span>Download for Windows</a>
+        <p style="text-align:center;font-size:13px;color:var(--mist-dim);margin-top:14px">Replace the link on this button with your real installer URL — see the comment near the top of this file.</p>
+      </div>
+
+      <div class="card">
+        <div class="panel-title">
+          <h3><span data-icon="code"></span>Install steps</h3>
+        </div>
+        <div class="meta-line"><span>1.</span><span>Run the downloaded installer</span></div>
+        <div class="meta-line"><span>2.</span><span>Allow the WebView2 prompt if it appears</span></div>
+        <div class="meta-line"><span>3.</span><span>Launch Auris and paste your key</span></div>
+        <div class="meta-line"><span>4.</span><span>Open Roblox, then open a script tab</span></div>
+      </div>
+    </div>
+
+    <div class="section-head" style="margin-top:56px">
+      <span class="eyebrow">Changelog</span>
+      <h2>Recent updates</h2>
+    </div>
+    <div class="accordion">
+      <details open>
+        <summary>v1.4.2 — July 12, 2026<span class="chev" data-icon="chevrondown"></span></summary>
+        <div class="a-body"><p>Fixed a crash when reopening a tab from the chevron dropdown. Tab search now matches partial names.</p></div>
+      </details>
+      <details>
+        <summary>v1.4.0 — June 28, 2026<span class="chev" data-icon="chevrondown"></span></summary>
+        <div class="a-body"><p>Added the tab bar right-click menu and a redesigned welcome screen with recent-file thumbnails.</p></div>
+      </details>
+      <details>
+        <summary>v1.3.5 — June 9, 2026<span class="chev" data-icon="chevrondown"></span></summary>
+        <div class="a-body"><p>Editor performance improvements for large scripts. Minor theme contrast fixes.</p></div>
+      </details>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="nav-logo">AURIS<span class="dot">.</span></span>
+        <p>A Monaco-powered script editor and execution client for Roblox.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="index.html">Home</a>
+        <a href="information.html">Information</a>
+        <a href="keysystem.html">Key System</a>
+        <a href="download.html">Download</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="user.html">User panel</a>
+        <a href="admin.html">Admin</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer">Discord</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span data-year></span> Auris.</p>
+      <p class="disclaimer">Auris is provided for educational and private-server use. You're responsible for complying with the terms of service of any game you run it alongside.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script>
+  // Swap "#" for your real hosted installer link (GitHub Releases, your own CDN, etc.)
+  document.getElementById("downloadBtn").addEventListener("click", (e) => {
+    if (e.currentTarget.getAttribute("href") === "#") {
+      e.preventDefault();
+      showToast("Hook this button up to your real installer URL in download.html.", "error");
+    }
+  });
+</script>
+</body>
+</html>

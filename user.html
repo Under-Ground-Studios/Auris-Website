@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>User Panel — Auris</title>
+<meta name="description" content="Log in to check your key status, reset your HWID, and grab the download.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="index.html" class="nav-logo">AURIS<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="information.html">Information</a></li>
+      <li><a href="keysystem.html">Key System</a></li>
+      <li><a href="download.html">Download</a></li>
+      <li><a href="user.html">Panel</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">
+        <span data-icon="chat"></span><span class="btn-discord-label">Discord</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span data-icon="menu"></span></button>
+    </div>
+  </div>
+</nav>
+<div class="scrim" id="scrim"></div>
+<aside class="mobile-panel" id="mobilePanel">
+  <div class="mobile-panel-head">
+    <span class="nav-logo">AURIS<span class="dot">.</span></span>
+    <button id="mobileClose" aria-label="Close menu" style="background:none;border:none;color:var(--paper)"><span data-icon="close"></span></button>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="information.html">Information</a>
+    <a href="keysystem.html">Key System</a>
+    <a href="download.html">Download</a>
+    <a href="user.html">Panel</a>
+  </nav>
+</aside>
+
+<!-- ============ LOGGED OUT: auth card ============ -->
+<div id="authView" class="auth-shell hidden">
+  <div class="card auth-card">
+    <div class="auth-tabs">
+      <button class="active" id="tabLogin">Log in</button>
+      <button id="tabRegister">Register</button>
+    </div>
+
+    <div id="loginForm">
+      <h1>Welcome back</h1>
+      <p>Check your key status and manage your HWID.</p>
+      <div class="field">
+        <label for="loginUser">Username</label>
+        <div class="input-wrap"><span class="icon" data-icon="user"></span><input id="loginUser" type="text" autocomplete="username"></div>
+      </div>
+      <div class="field">
+        <label for="loginPass">Password</label>
+        <div class="input-wrap"><span class="icon" data-icon="lock"></span><input id="loginPass" type="password" autocomplete="current-password"></div>
+      </div>
+      <p class="form-error" id="loginError"></p>
+      <button class="btn btn-primary btn-block" id="loginBtn"><span data-icon="logout"></span>Log in</button>
+      <p class="demo-hint">Demo account — try:<br>shadowplayer / demo1234</p>
+    </div>
+
+    <div id="registerForm" class="hidden">
+      <h1>Create an account</h1>
+      <p>Optional — you can also just grab a key without one.</p>
+      <div class="field">
+        <label for="regUser">Username</label>
+        <div class="input-wrap"><span class="icon" data-icon="user"></span><input id="regUser" type="text" autocomplete="username"></div>
+      </div>
+      <div class="field">
+        <label for="regPass">Password</label>
+        <div class="input-wrap"><span class="icon" data-icon="lock"></span><input id="regPass" type="password" autocomplete="new-password"></div>
+      </div>
+      <p class="form-error" id="registerError"></p>
+      <button class="btn btn-primary btn-block" id="registerBtn"><span data-icon="user"></span>Create account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ LOGGED IN: dashboard ============ -->
+<div id="dashView" class="hidden">
+  <header class="dash-header container">
+    <div>
+      <h1>Hey, <span id="dashUsername">—</span></h1>
+      <p>Here's where things stand.</p>
+    </div>
+    <button class="btn btn-ghost" id="logoutBtn"><span data-icon="logout"></span>Log out</button>
+  </header>
+
+  <section style="padding-top:0">
+    <div class="container">
+      <div class="dash-grid">
+        <div class="card">
+          <div class="panel-title">
+            <h3><span data-icon="key"></span>Your key</h3>
+            <span class="status-pill off" id="dashKeyPill">no active key</span>
+          </div>
+          <div id="dashNoKey">
+            <p>You don't have an active key yet.</p>
+            <a href="keysystem.html" class="btn btn-primary btn-block"><span data-icon="key"></span>Get a key</a>
+          </div>
+          <div id="dashHasKey" class="hidden">
+            <div class="key-display">
+              <span id="dashKeyValue" style="font-family:var(--font-mono)">—</span>
+              <button id="dashCopyKey" aria-label="Copy key"><span data-icon="copy"></span></button>
+            </div>
+            <div class="meta-line"><span>Expires in</span><span id="dashKeyCountdown" style="font-family:var(--font-mono)">—</span></div>
+            <a href="keysystem.html" class="btn btn-ghost btn-block" style="margin-top:16px">Manage on Key System page</a>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="panel-title">
+            <h3><span data-icon="shield"></span>Device (HWID)</h3>
+          </div>
+          <div class="key-display" style="font-size:13px">
+            <span id="dashHwid" style="font-family:var(--font-mono)">—</span>
+          </div>
+          <p id="hwidCooldownNote" style="font-size:13px;margin-bottom:14px"></p>
+          <button class="btn btn-ghost btn-block" id="resetHwidBtn"><span data-icon="refresh"></span>Reset HWID</button>
+        </div>
+      </div>
+
+      <div class="grid grid-3">
+        <a href="download.html" class="card card-hover" style="text-align:center">
+          <div class="icon-badge" style="margin:0 auto 14px"><span data-icon="download"></span></div>
+          <h3 style="font-size:15.5px;margin-bottom:4px">Download Auris</h3>
+          <p style="font-size:13.5px;margin:0">Latest build for Windows</p>
+        </a>
+        <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="card card-hover" style="text-align:center">
+          <div class="icon-badge alt" style="margin:0 auto 14px"><span data-icon="chat"></span></div>
+          <h3 style="font-size:15.5px;margin-bottom:4px">Join Discord</h3>
+          <p style="font-size:13.5px;margin:0">Updates and support</p>
+        </a>
+        <a href="information.html" class="card card-hover" style="text-align:center">
+          <div class="icon-badge" style="margin:0 auto 14px"><span data-icon="code"></span></div>
+          <h3 style="font-size:15.5px;margin-bottom:4px">Read the FAQ</h3>
+          <p style="font-size:13.5px;margin:0">Requirements &amp; common questions</p>
+        </a>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="nav-logo">AURIS<span class="dot">.</span></span>
+        <p>A Monaco-powered script editor and execution client for Roblox.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="index.html">Home</a>
+        <a href="information.html">Information</a>
+        <a href="keysystem.html">Key System</a>
+        <a href="download.html">Download</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="user.html">User panel</a>
+        <a href="admin.html">Admin</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer">Discord</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span data-year></span> Auris.</p>
+      <p class="disclaimer">Auris is provided for educational and private-server use. You're responsible for complying with the terms of service of any game you run it alongside.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/keysystem.js"></script>
+<script>
+  const HWID_COOLDOWN = 24 * 60 * 60 * 1000;
+  let dashKeyTimer = null;
+
+  function render() {
+    const user = getCurrentUser();
+    document.getElementById("authView").classList.toggle("hidden", !!user);
+    document.getElementById("dashView").classList.toggle("hidden", !user);
+    if (!user) return;
+
+    document.getElementById("dashUsername").textContent = user.username;
+    document.getElementById("dashHwid").textContent = user.hwid;
+
+    const key = getActiveKeyForCurrentContext();
+    const pill = document.getElementById("dashKeyPill");
+    const noKey = document.getElementById("dashNoKey");
+    const hasKey = document.getElementById("dashHasKey");
+    clearInterval(dashKeyTimer);
+    if (isKeyValid(key)) {
+      pill.textContent = "active"; pill.className = "status-pill on";
+      noKey.classList.add("hidden"); hasKey.classList.remove("hidden");
+      document.getElementById("dashKeyValue").textContent = key.value;
+      const countdownEl = document.getElementById("dashKeyCountdown");
+      const tick = () => {
+        const left = key.expiresAt - Date.now();
+        if (left <= 0) { clearInterval(dashKeyTimer); render(); return; }
+        countdownEl.textContent = formatCountdown(left);
+      };
+      tick();
+      dashKeyTimer = setInterval(tick, 1000);
+    } else {
+      pill.textContent = "no active key"; pill.className = "status-pill off";
+      noKey.classList.remove("hidden"); hasKey.classList.add("hidden");
+    }
+
+    const sinceReset = Date.now() - (user.lastHwidReset || 0);
+    const resetBtn = document.getElementById("resetHwidBtn");
+    const note = document.getElementById("hwidCooldownNote");
+    if (user.lastHwidReset && sinceReset < HWID_COOLDOWN) {
+      resetBtn.setAttribute("disabled", "true");
+      note.textContent = "Next reset available in " + formatCountdown(HWID_COOLDOWN - sinceReset) + ".";
+    } else {
+      resetBtn.removeAttribute("disabled");
+      note.textContent = "One reset per 24 hours.";
+    }
+  }
+
+  document.getElementById("tabLogin").addEventListener("click", () => {
+    document.getElementById("tabLogin").classList.add("active");
+    document.getElementById("tabRegister").classList.remove("active");
+    document.getElementById("loginForm").classList.remove("hidden");
+    document.getElementById("registerForm").classList.add("hidden");
+  });
+  document.getElementById("tabRegister").addEventListener("click", () => {
+    document.getElementById("tabRegister").classList.add("active");
+    document.getElementById("tabLogin").classList.remove("active");
+    document.getElementById("registerForm").classList.remove("hidden");
+    document.getElementById("loginForm").classList.add("hidden");
+  });
+
+  document.getElementById("loginBtn").addEventListener("click", () => {
+    const res = loginUser(document.getElementById("loginUser").value, document.getElementById("loginPass").value);
+    const err = document.getElementById("loginError");
+    if (res.ok) { err.textContent = ""; showToast("Welcome back, " + res.user.username + "."); render(); }
+    else err.textContent = res.error;
+  });
+
+  document.getElementById("registerBtn").addEventListener("click", () => {
+    const res = registerUser(document.getElementById("regUser").value, document.getElementById("regPass").value);
+    const err = document.getElementById("registerError");
+    if (res.ok) { err.textContent = ""; showToast("Account created — you're logged in."); render(); }
+    else err.textContent = res.error;
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    logoutUser();
+    showToast("Logged out.");
+    render();
+  });
+
+  document.getElementById("dashCopyKey").addEventListener("click", async () => {
+    try { await navigator.clipboard.writeText(document.getElementById("dashKeyValue").textContent); showToast("Key copied."); }
+    catch { showToast("Couldn't copy automatically — select the key manually.", "error"); }
+  });
+
+  document.getElementById("resetHwidBtn").addEventListener("click", async () => {
+    const ok = await confirmAction("Reset your HWID? Your key will move to the new device fingerprint.", "Reset HWID");
+    if (!ok) return;
+    const user = getCurrentUser();
+    updateUser(user.id, { hwid: genHwid(), lastHwidReset: Date.now() });
+    showToast("HWID reset.");
+    render();
+  });
+
+  render();
+</script>
+</body>
+</html>

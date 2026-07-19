@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Auris</title>
+<meta name="description" content="Manage Auris accounts and keys.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="index.html" class="nav-logo">AURIS<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="information.html">Information</a></li>
+      <li><a href="keysystem.html">Key System</a></li>
+      <li><a href="download.html">Download</a></li>
+      <li><a href="user.html">Panel</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">
+        <span data-icon="chat"></span><span class="btn-discord-label">Discord</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span data-icon="menu"></span></button>
+    </div>
+  </div>
+</nav>
+<div class="scrim" id="scrim"></div>
+<aside class="mobile-panel" id="mobilePanel">
+  <div class="mobile-panel-head">
+    <span class="nav-logo">AURIS<span class="dot">.</span></span>
+    <button id="mobileClose" aria-label="Close menu" style="background:none;border:none;color:var(--paper)"><span data-icon="close"></span></button>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="information.html">Information</a>
+    <a href="keysystem.html">Key System</a>
+    <a href="download.html">Download</a>
+    <a href="user.html">Panel</a>
+  </nav>
+</aside>
+
+<!-- ============ LOGGED OUT: admin login ============ -->
+<div id="authView" class="auth-shell hidden">
+  <div class="card auth-card">
+    <h1><span data-icon="shield" style="display:inline-flex;vertical-align:-4px;margin-right:6px;width:20px;height:20px;color:var(--mint)"></span>Admin login</h1>
+    <p>Restricted to site administrators.</p>
+    <div class="field">
+      <label for="adminUser">Username</label>
+      <div class="input-wrap"><span class="icon" data-icon="user"></span><input id="adminUser" type="text" autocomplete="username"></div>
+    </div>
+    <div class="field">
+      <label for="adminPass">Password</label>
+      <div class="input-wrap"><span class="icon" data-icon="lock"></span><input id="adminPass" type="password" autocomplete="current-password"></div>
+    </div>
+    <p class="form-error" id="adminError"></p>
+    <button class="btn btn-primary btn-block" id="adminLoginBtn"><span data-icon="shield"></span>Log in</button>
+    <p class="demo-hint">Demo admin login:<br>admin / admin123<br>Change this before deploying for real.</p>
+  </div>
+</div>
+
+<!-- ============ LOGGED IN: admin dashboard ============ -->
+<div id="dashView" class="hidden">
+  <header class="dash-header container">
+    <div>
+      <h1>Admin dashboard</h1>
+      <p>Everything here reads from this browser's local demo data.</p>
+    </div>
+    <button class="btn btn-ghost" id="logoutBtn"><span data-icon="logout"></span>Log out</button>
+  </header>
+
+  <section style="padding-top:0">
+    <div class="container">
+      <div class="stat-row">
+        <div class="card stat-card">
+          <span class="label">Total users</span>
+          <span class="value" id="statUsers">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="label">Active keys</span>
+          <span class="value mint" id="statActiveKeys">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="label">Keys generated</span>
+          <span class="value" id="statTotalKeys">0</span>
+        </div>
+        <div class="card stat-card">
+          <span class="label">Banned</span>
+          <span class="value" id="statBanned">0</span>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="panel-title">
+          <h3><span data-icon="users"></span>Users</h3>
+        </div>
+        <div class="table-toolbar">
+          <div class="table-search">
+            <span class="icon" data-icon="search"></span>
+            <input type="text" id="userSearch" placeholder="Search by username…">
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Key status</th>
+                <th>HWID</th>
+                <th>Joined</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="userTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="nav-logo">AURIS<span class="dot">.</span></span>
+        <p>A Monaco-powered script editor and execution client for Roblox.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="index.html">Home</a>
+        <a href="information.html">Information</a>
+        <a href="keysystem.html">Key System</a>
+        <a href="download.html">Download</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="user.html">User panel</a>
+        <a href="admin.html">Admin</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer">Discord</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span data-year></span> Auris.</p>
+      <p class="disclaimer">Auris is provided for educational and private-server use. You're responsible for complying with the terms of service of any game you run it alongside.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/keysystem.js"></script>
+<script>
+  function isAdminSession() {
+    const u = getCurrentUser();
+    return u && u.role === "admin";
+  }
+
+  function renderGate() {
+    const ok = isAdminSession();
+    document.getElementById("authView").classList.toggle("hidden", ok);
+    document.getElementById("dashView").classList.toggle("hidden", !ok);
+    if (ok) renderDashboard();
+  }
+
+  function fmtDate(ts) {
+    return new Date(ts).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" });
+  }
+
+  function renderDashboard() {
+    const users = getUsers();
+    const kstats = getKeyStats();
+    document.getElementById("statUsers").textContent = users.length;
+    document.getElementById("statActiveKeys").textContent = kstats.active;
+    document.getElementById("statTotalKeys").textContent = kstats.totalGenerated;
+    document.getElementById("statBanned").textContent = users.filter((u) => u.banned).length;
+    renderTable(users);
+  }
+
+  function renderTable(users) {
+    const body = document.getElementById("userTableBody");
+    if (!users.length) {
+      body.innerHTML = '<tr class="empty-row"><td colspan="6">No users match.</td></tr>';
+      return;
+    }
+    body.innerHTML = users.map((u) => {
+      const keyOk = u.keyExpiresAt && u.keyExpiresAt > Date.now();
+      const keyPill = u.banned
+        ? '<span class="status-pill bad">banned</span>'
+        : keyOk
+          ? '<span class="status-pill on">active</span>'
+          : '<span class="status-pill off">' + (u.keyValue ? "expired" : "none") + '</span>';
+      return (
+        '<tr data-id="' + u.id + '">' +
+        "<td>" + u.username + (u.role === "admin" ? ' <span class="mono-id">admin</span>' : "") + "</td>" +
+        "<td>" + u.role + "</td>" +
+        "<td>" + keyPill + "</td>" +
+        '<td><span class="mono-id">' + u.hwid + "</span></td>" +
+        "<td>" + fmtDate(u.createdAt) + "</td>" +
+        '<td class="row-actions">' +
+        '<button data-act="reset-hwid" title="Reset HWID"><span data-icon="refresh"></span></button>' +
+        '<button data-act="revoke-key" title="Revoke key"' + (u.keyValue ? "" : " disabled") + '><span data-icon="key"></span></button>' +
+        '<button data-act="toggle-ban" title="' + (u.banned ? "Unban" : "Ban") + '"><span data-icon="ban"></span></button>' +
+        (u.role === "admin" ? "" : '<button data-act="delete" class="danger" title="Delete"><span data-icon="trash"></span></button>') +
+        "</td></tr>"
+      );
+    }).join("");
+    renderIcons(body);
+  }
+
+  document.getElementById("adminLoginBtn").addEventListener("click", () => {
+    const res = loginUser(document.getElementById("adminUser").value, document.getElementById("adminPass").value);
+    const err = document.getElementById("adminError");
+    if (!res.ok) { err.textContent = res.error; return; }
+    if (res.user.role !== "admin") { err.textContent = "That account doesn't have admin access."; logoutUser(); return; }
+    err.textContent = "";
+    showToast("Welcome back, " + res.user.username + ".");
+    renderGate();
+  });
+
+  document.getElementById("logoutBtn").addEventListener("click", () => {
+    logoutUser();
+    showToast("Logged out.");
+    renderGate();
+  });
+
+  document.getElementById("userSearch").addEventListener("input", (e) => {
+    const q = e.target.value.trim().toLowerCase();
+    renderTable(getUsers().filter((u) => u.username.toLowerCase().includes(q)));
+  });
+
+  document.getElementById("userTableBody").addEventListener("click", async (e) => {
+    const btn = e.target.closest("[data-act]");
+    if (!btn) return;
+    const row = e.target.closest("tr");
+    const id = row.getAttribute("data-id");
+    const user = getUsers().find((u) => u.id === id);
+    if (!user) return;
+    const act = btn.getAttribute("data-act");
+
+    if (act === "reset-hwid") {
+      updateUser(id, { hwid: genHwid(), lastHwidReset: Date.now() });
+      showToast("HWID reset for " + user.username + ".");
+      renderDashboard();
+    } else if (act === "revoke-key") {
+      const ok = await confirmAction("Revoke the active key for " + user.username + "?", "Revoke");
+      if (!ok) return;
+      updateUser(id, { keyValue: null, keyCreatedAt: null, keyExpiresAt: null });
+      showToast("Key revoked for " + user.username + ".");
+      renderDashboard();
+    } else if (act === "toggle-ban") {
+      const next = !user.banned;
+      const ok = await confirmAction((next ? "Ban " : "Unban ") + user.username + "?", next ? "Ban" : "Unban");
+      if (!ok) return;
+      updateUser(id, { banned: next });
+      showToast(user.username + (next ? " banned." : " unbanned."));
+      renderDashboard();
+    } else if (act === "delete") {
+      const ok = await confirmAction("Permanently delete " + user.username + "? This can't be undone.", "Delete");
+      if (!ok) return;
+      deleteUserById(id);
+      showToast(user.username + " deleted.");
+      renderDashboard();
+    }
+  });
+
+  renderGate();
+</script>
+</body>
+</html>

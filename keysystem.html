@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Key System — Auris</title>
+<meta name="description" content="Generate a free 24-hour Auris key and verify existing keys.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar" id="navbar">
+  <div class="container nav-container">
+    <a href="index.html" class="nav-logo">AURIS<span class="dot">.</span></a>
+    <ul class="nav-links">
+      <li><a href="index.html">Home</a></li>
+      <li><a href="information.html">Information</a></li>
+      <li><a href="keysystem.html">Key System</a></li>
+      <li><a href="download.html">Download</a></li>
+      <li><a href="user.html">Panel</a></li>
+    </ul>
+    <div class="nav-actions">
+      <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer" class="btn btn-ghost">
+        <span data-icon="chat"></span><span class="btn-discord-label">Discord</span>
+      </a>
+      <button class="nav-toggle" id="navToggle" aria-label="Open menu"><span data-icon="menu"></span></button>
+    </div>
+  </div>
+</nav>
+<div class="scrim" id="scrim"></div>
+<aside class="mobile-panel" id="mobilePanel">
+  <div class="mobile-panel-head">
+    <span class="nav-logo">AURIS<span class="dot">.</span></span>
+    <button id="mobileClose" aria-label="Close menu" style="background:none;border:none;color:var(--paper)"><span data-icon="close"></span></button>
+  </div>
+  <nav>
+    <a href="index.html">Home</a>
+    <a href="information.html">Information</a>
+    <a href="keysystem.html">Key System</a>
+    <a href="download.html">Download</a>
+    <a href="user.html">Panel</a>
+  </nav>
+</aside>
+
+<header class="page-header">
+  <div class="container">
+    <span class="eyebrow">Key system</span>
+    <h1>Get your key</h1>
+    <p class="lead">Free, valid for 24 hours, no account required. If you're logged in, it's saved to your panel automatically.</p>
+  </div>
+</header>
+
+<section style="padding-top:0">
+  <div class="container">
+    <div class="steps mb-lg">
+      <div class="step">
+        <span class="step-num">01</span>
+        <h3>Start the check</h3>
+        <p>Tap "Get key" below to begin the quick verification step.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">02</span>
+        <h3>Wait a few seconds</h3>
+        <p>This is what keeps the key system free to run — no payment, just a short pause.</p>
+      </div>
+      <div class="step">
+        <span class="step-num">03</span>
+        <h3>Copy your key</h3>
+        <p>Paste it into Auris on first launch, or whenever your last one expires.</p>
+      </div>
+    </div>
+
+    <div class="dash-grid">
+      <div class="card" id="keyCard">
+        <div class="panel-title">
+          <h3><span data-icon="key"></span>Generate a key</h3>
+          <span class="status-pill off" id="keyStatusPill">no active key</span>
+        </div>
+
+        <div id="keyIdle">
+          <p style="margin-bottom:22px">Generating a key starts a short verification step. In your own deployment, swap this for your ad-locker or verification link of choice — see the comment at the top of <code style="font-family:var(--font-mono)">js/keysystem.js</code>.</p>
+          <button class="btn btn-primary btn-block" id="getKeyBtn"><span data-icon="key"></span>Get key</button>
+        </div>
+
+        <div id="keyVerifying" class="hidden text-center" style="padding:20px 0">
+          <p id="verifyText" style="margin-bottom:6px">Verifying, continuing in <span id="verifyCount">5</span>s…</p>
+          <p style="font-size:13px;color:var(--mist-dim)">(Demo timer — this is where a real ad-locker step would run.)</p>
+        </div>
+
+        <div id="keyReady" class="hidden">
+          <p style="margin-bottom:6px">Your key is active:</p>
+          <div class="key-display">
+            <span id="keyValueText" style="font-family:var(--font-mono)">—</span>
+            <button id="copyKeyBtn" aria-label="Copy key"><span data-icon="copy"></span></button>
+          </div>
+          <div class="meta-line"><span>Expires in</span><span id="keyCountdown" style="font-family:var(--font-mono)">—</span></div>
+          <button class="btn btn-ghost btn-block" id="regenKeyBtn" style="margin-top:16px"><span data-icon="refresh"></span>Generate a new one</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="panel-title">
+          <h3><span data-icon="check"></span>Verify a key</h3>
+        </div>
+        <p style="margin-bottom:18px">Already have a key and want to check it's still valid? Paste it here.</p>
+        <div class="field no-icon">
+          <label for="verifyInput">Key</label>
+          <input type="text" id="verifyInput" placeholder="AURIS-XXXX-XXXX-XXXX">
+        </div>
+        <button class="btn btn-ghost btn-block" id="verifyBtn"><span data-icon="search"></span>Check key</button>
+        <p id="verifyResult" class="form-error" style="min-height:1.4em;margin-top:14px"></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-brand">
+        <span class="nav-logo">AURIS<span class="dot">.</span></span>
+        <p>A Monaco-powered script editor and execution client for Roblox.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Navigate</h4>
+        <a href="index.html">Home</a>
+        <a href="information.html">Information</a>
+        <a href="keysystem.html">Key System</a>
+        <a href="download.html">Download</a>
+      </div>
+      <div class="footer-col">
+        <h4>Account</h4>
+        <a href="user.html">User panel</a>
+        <a href="admin.html">Admin</a>
+      </div>
+      <div class="footer-col">
+        <h4>Community</h4>
+        <a href="https://discord.gg/invite/mG2QCJRTJK" target="_blank" rel="noopener noreferrer">Discord</a>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; <span data-year></span> Auris.</p>
+      <p class="disclaimer">Auris is provided for educational and private-server use. You're responsible for complying with the terms of service of any game you run it alongside.</p>
+    </div>
+  </div>
+</footer>
+
+<script src="js/app.js"></script>
+<script src="js/auth.js"></script>
+<script src="js/keysystem.js"></script>
+<script>
+  const idleEl = document.getElementById("keyIdle");
+  const verifyingEl = document.getElementById("keyVerifying");
+  const readyEl = document.getElementById("keyReady");
+  const pillEl = document.getElementById("keyStatusPill");
+  const countEl = document.getElementById("verifyCount");
+  const valueEl = document.getElementById("keyValueText");
+  const countdownEl = document.getElementById("keyCountdown");
+  let countdownTimer = null;
+
+  function paintExisting() {
+    const key = getActiveKeyForCurrentContext();
+    if (isKeyValid(key)) {
+      showReady(key);
+    } else {
+      idleEl.classList.remove("hidden");
+      readyEl.classList.add("hidden");
+      verifyingEl.classList.add("hidden");
+      pillEl.textContent = "no active key";
+      pillEl.className = "status-pill off";
+    }
+  }
+
+  function showReady(key) {
+    idleEl.classList.add("hidden");
+    verifyingEl.classList.add("hidden");
+    readyEl.classList.remove("hidden");
+    valueEl.textContent = key.value;
+    pillEl.textContent = "active";
+    pillEl.className = "status-pill on";
+    clearInterval(countdownTimer);
+    countdownTimer = setInterval(() => {
+      const left = key.expiresAt - Date.now();
+      if (left <= 0) {
+        clearInterval(countdownTimer);
+        paintExisting();
+        return;
+      }
+      countdownEl.textContent = formatCountdown(left);
+    }, 1000);
+    countdownEl.textContent = formatCountdown(key.expiresAt - Date.now());
+  }
+
+  document.getElementById("getKeyBtn").addEventListener("click", () => {
+    if (REAL_VERIFICATION_URL) { window.location.href = REAL_VERIFICATION_URL; return; }
+    idleEl.classList.add("hidden");
+    verifyingEl.classList.remove("hidden");
+    let n = 5;
+    countEl.textContent = n;
+    const t = setInterval(() => {
+      n -= 1;
+      countEl.textContent = n;
+      if (n <= 0) {
+        clearInterval(t);
+        const key = generateKeyForCurrentContext();
+        showToast("Key generated — valid for 24 hours.");
+        showReady(key);
+      }
+    }, 1000);
+  });
+
+  document.getElementById("regenKeyBtn").addEventListener("click", () => {
+    readyEl.classList.add("hidden");
+    idleEl.classList.remove("hidden");
+  });
+
+  document.getElementById("copyKeyBtn").addEventListener("click", async () => {
+    try {
+      await navigator.clipboard.writeText(valueEl.textContent);
+      showToast("Key copied to clipboard.");
+    } catch {
+      showToast("Couldn't copy automatically — select the key manually.", "error");
+    }
+  });
+
+  document.getElementById("verifyBtn").addEventListener("click", () => {
+    const val = document.getElementById("verifyInput").value;
+    const resultEl = document.getElementById("verifyResult");
+    if (!val.trim()) { resultEl.textContent = "Enter a key first."; return; }
+    const res = verifyKeyString(val);
+    if (res.valid) {
+      resultEl.style.color = "var(--mint)";
+      resultEl.textContent = "Valid — " + formatCountdown(res.key.expiresAt - Date.now()) + " remaining.";
+    } else {
+      resultEl.style.color = "var(--alarm)";
+      resultEl.textContent = res.reason === "expired" ? "That key has expired." : "That key wasn't found.";
+    }
+  });
+
+  paintExisting();
+</script>
+</body>
+</html>
